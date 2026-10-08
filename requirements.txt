@@ -1,0 +1,7 @@
+pandas>=2.0
+numpy>=1.24
+networkx>=3.1
+python-louvain>=0.16
+rapidfuzz>=3.0
+pyyaml>=6.0
+pytest>=7.0
