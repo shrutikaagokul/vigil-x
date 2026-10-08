@@ -1,0 +1,50 @@
+{
+  "total_cases": 172,
+  "eligible_cases": 172,
+  "excluded_cases": 0,
+  "daily_capacity": 20,
+  "selected_count": 20,
+  "deferred_count": 152,
+  "priority_tier_counts": {
+    "LOW": 94,
+    "MEDIUM": 78
+  },
+  "average_priority_score": 0.3523,
+  "median_priority_score": 0.347,
+  "average_risk_score_selected": 0.3065,
+  "average_risk_score_deferred": 0.2675,
+  "average_exposure_selected": 8091.49,
+  "average_exposure_deferred": 313.54,
+  "baseline_comparison_top_n": {
+    "siu_unified_priority": {
+      "average_risk_score": 0.3065,
+      "average_exposure": 8091.49,
+      "total_exposure": 161829.79,
+      "average_evidence_strength": 0.6877,
+      "average_priority_score": 0.4223
+    },
+    "risk_only_baseline": {
+      "average_risk_score": 0.313,
+      "average_exposure": 5866.69,
+      "total_exposure": 117333.71,
+      "average_evidence_strength": 0.681,
+      "average_priority_score": 0.4104
+    },
+    "exposure_only_baseline": {
+      "average_risk_score": 0.2921,
+      "average_exposure": 8556.94,
+      "total_exposure": 171138.88,
+      "average_evidence_strength": 0.6881,
+      "average_priority_score": 0.407
+    }
+  },
+  "signal_missingness": {
+    "network_signal_missing_count": 0,
+    "anomaly_signal_missing_count": 0,
+    "future_risk_missing_count": 0,
+    "behavioral_signal_missing_count": 0,
+    "exposure_zero_count": 3
+  },
+  "queue_determinism_check": true,
+  "evaluation_notes": "Operational prioritization evaluation only; no ground-truth fraud labels were used."
+}

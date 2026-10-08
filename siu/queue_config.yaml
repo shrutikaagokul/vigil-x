@@ -1,0 +1,38 @@
+# ==============================================================================
+# VIGIL-X SIU PRIORITY QUEUE CONFIGURATION
+# Production-quality, deterministic, capacity-aware investigation queue.
+# ==============================================================================
+
+siu:
+  version: "1.0.0"
+  
+  # Default daily investigator caseload capacity
+  daily_capacity: 20
+
+  # Case lifecycle statuses eligible for SIU queue prioritization
+  # Excludes CLOSED cases by default
+  eligible_statuses:
+    - "NEW"
+    - "IN_REVIEW"
+    - "ESCALATED"
+
+  # Priority scoring weights (must sum to 1.0)
+  # IMPORTANT: These are operational prioritization weights, not fraud probabilities.
+  weights:
+    risk_score: 0.35
+    evidence_strength: 0.20
+    estimated_exposure: 0.15
+    network_signal: 0.10
+    anomaly_signal: 0.05
+    future_risk_signal: 0.10
+    behavioral_signal: 0.05
+
+  # Deterministic thresholds for operational priority tiers
+  thresholds:
+    critical: 0.80
+    high: 0.60
+    medium: 0.35
+
+  # Display and explanation limits
+  limits:
+    max_reasons: 5

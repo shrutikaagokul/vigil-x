@@ -1,0 +1,33 @@
+{
+  "model_version": "1.0.0",
+  "feature_version": "1.0.0",
+  "saved_at": "2026-10-08T17:38:46.337812+00:00",
+  "n_estimators": 200,
+  "contamination": 0.05,
+  "random_state": 42,
+  "feature_names": [
+    "prov_claim_count",
+    "prov_unique_members",
+    "prov_unique_cpts",
+    "prov_active_days",
+    "prov_total_paid",
+    "prov_mean_paid",
+    "prov_median_paid",
+    "prov_max_paid",
+    "prov_std_paid",
+    "prov_paid_to_billed_ratio",
+    "prov_log_total_paid",
+    "prov_em_claim_count",
+    "prov_em45_count",
+    "prov_em45_share",
+    "prov_em_share",
+    "prov_mean_service_minutes",
+    "prov_median_service_minutes",
+    "prov_visits_per_member",
+    "prov_weekend_rate",
+    "prov_daily_mean",
+    "prov_daily_std",
+    "prov_burst_cv"
+  ],
+  "n_features": 22
+}
