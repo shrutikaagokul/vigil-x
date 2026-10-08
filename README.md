@@ -1,207 +1,159 @@
-# Vigil-X: Network & Behavioral Intelligence Subsystem
+# Vigil-X: Claim & Utilization Intelligence Subsystem
 
-Vigil-X is an AI-powered healthcare payer Fraud, Waste & Abuse (FWA) intelligence platform designed for Special Investigation Units (SIU). The system does **not** make legal determinations of fraud; instead, it detects behavioral and network anomalies, compiles evidence-backed alerts, reconstructs hidden entity relationships, and prioritizes cases for human investigators.
+Vigil-X is an AI-powered healthcare payer Fraud, Waste & Abuse (FWA) intelligence platform designed for Special Investigation Units (SIU). The system does **not** declare fraud; it identifies suspicious indicators, produces evidence-backed alerts, and prioritizes them for human investigation.
 
-This subsystem provides the complete **Network & Behavioral Intelligence engine** (Rules R06–R10, graph construction, entity resolution, and temporal/geographic feature engineering).
+This subsystem provides the **Claim & Utilization Intelligence** foundation, implementing detection rules **R01 through R05**, shared feature engineering, and the common **Alert / Evidence data contract** for the entire platform.
 
 ---
 
 ## Architecture Overview
 
 ```
-                      ┌─────────────────────────────────────────┐
-                      │ Raw Claims, Providers, Members, Facs    │
-                      └────────────────────┬────────────────────┘
-                                           │
-                ┌──────────────────────────┴──────────────────────────┐
-                ▼                                                     ▼
-     ┌───────────────────────┐                             ┌───────────────────────┐
-     │ Feature Engineering   │                             │   Entity Resolution   │
-     │ - Haversine Distance  │                             │ - Address Clean & Norm│
-     │ - Speed Checks (mph)  │                             │ - Fuzzy Owner Match   │
-     │ - Weekly Panel / Spikes│                            │ - Bank / TIN Hashing  │
-     │ - Rolling Baselines   │                             │ - Entity Clusters     │
-     └──────────┬────────────┘                             └──────────┬────────────┘
-                │                                                     │
-                ├──────────────────────────┬──────────────────────────┤
-                ▼                          ▼                          ▼
-     ┌──────────────────────┐   ┌──────────────────────┐   ┌──────────────────────┐
-     │ Behavioral Rules     │   │ Graph & Network      │   │ Referral Intelligence│
-     │ - R06: Timing        │   │ - Multi-Relational G │   │ - R07: Concentrations│
-     │ - R08: Geo Anomaly   │   │ - Provider Projection│   │ - Reciprocal Loops   │
-     │ - R10: Burst / Spike │   │ - Louvain Communities│   │ - Same-Day Lab Links │
-     └──────────┬───────────┘   │ - R09: Identity Link │   └──────────┬───────────┘
-                │               └──────────┬───────────┘              │
-                │                          │                          │
-                └──────────────────────────┼──────────────────────────┘
-                                           ▼
-                      ┌─────────────────────────────────────────┐
-                      │      Shared Alert & Evidence Layer      │
-                      │       (contracts/alert.py)              │
-                      └────────────────────┬────────────────────┘
-                                           │
-                     ┌─────────────────────┴─────────────────────┐
-                     ▼                                           ▼
-        ┌─────────────────────────┐                 ┌─────────────────────────┐
-        │  SIU Investigation UI   │                 │ Risk & Case Aggregation │
-        │  - Case Subgraphs       │                 │ - Rule alerts stream    │
-        │  - Member Cohorts       │                 │ - Network risk signals  │
-        └─────────────────────────┘                 └─────────────────────────┘
-```
-
----
-
-## Rules Owned (R06–R10)
-
-| Rule ID | Name | Description | Key Triggers & Thresholds |
-|---|---|---|---|
-| **R06** | **Impossible Timing** | Flags impossible provider workload, superhuman travel between claims, and overlapping in-person services. | • Daily service minutes > 960 (16 hrs)<br>• Required travel speed > 60 mph between consecutive claims<br>• Overlapping in-person services for same member |
-| **R07** | **Referral Anomaly** | Flags suspicious referral concentration, kickback loops, same-day high-cost lab referrals, and sudden referral volume spikes. | • >70% referrals directed to a single target (min 20 referrals)<br>• Reciprocal loops (A→B and B→A both ≥ 15)<br>• Same-day referral + high-cost lab claim<br>• 30-day referral volume > 3.0 z-score vs 90-day baseline |
-| **R08** | **Geographic Anomaly** | Detects excessive member-provider travel distances, anomalous multi-county patient distributions, and suspicious facility addresses. | • Routine care distance > 75 miles (routine specialties)<br>• Non-routine specialty care > 150 miles or > specialty 99th percentile<br>• Provider billing patients across ≥ 5 counties<br>• Virtual office, residential, or PO Box facility billing |
-| **R09** | **Shared Identity Link** | Uncovers hidden relationships between distinct billing providers using resolved entity clusters. | • Shared bank account hash (weight 1.0)<br>• Shared owner (exact 0.9, fuzzy ≥88% 0.7)<br>• Shared address suite (0.6) or building (0.4)<br>• Documented corporate group discount applied to prevent false positives |
-| **R10** | **Burst / Spike** | Flags sudden anomalous surges in weekly billing volume compared to trailing historical baselines. | • Weekly paid amount > 3.0× trailing 12-week median<br>• Weekly dollar floor: ≥ $5,000<br>• Minimum history requirement: ≥ 4 weeks |
-
----
-
-## Subsystem Structure
-
-```
 vigil-x/
+├── src/
+│   └── vigilx/
+│       ├── __init__.py
+│       ├── models/                  # Shared Alert/Evidence contract (Platform Source of Truth)
+│       │   ├── __init__.py
+│       │   └── alert.py             # Alert, Evidence, Severity dataclasses
+│       ├── features/                # Shared vectorized feature engineering
+│       │   ├── __init__.py
+│       │   ├── claim_features.py    # Frequency, rolling 30d windows, E/M extraction
+│       │   ├── member_features.py   # Member utilization, ghost member heuristics
+│       │   ├── provider_features.py # E/M distributions, visit rates, unbundling rates
+│       │   └── peer_features.py     # Median Absolute Deviation (MAD) z-scores, peer stats
+│       ├── rules/                   # Detection rules
+│       │   ├── __init__.py
+│       │   ├── base.py              # BaseRule abstract class with config loader
+│       │   ├── r01_duplicate_billing.py       # R01: Exact & near-duplicates
+│       │   ├── r02_upcoding.py                # R02: E/M bell-curve & high-coding shifts
+│       │   ├── r03_unbundling.py              # R03: Comprehensive + component pairs
+│       │   ├── r04_phantom_services.py        # R04: Post-death, post-term, facility checks
+│       │   └── r05_excessive_utilization.py   # R05: Rolling 30d caps & visit frequency
+│       ├── runner.py                # RuleRunner & run_claim_utilization_rules API
+│       └── data_loader.py           # Synthetic data loader with date parsing
 ├── config/
-│   └── rules_config.yaml           # Centralized YAML configuration for R06-R10 thresholds
-├── contracts/
-│   └── alert.py                    # Shared Alert and Evidence dataclasses (common contract)
-├── entity_resolution/
-│   └── resolver.py                 # Address normalization, fuzzy matching, entity clustering
-├── geo/
-│   └── haversine.py                # Haversine distance and required travel speed calculators
-├── temporal/
-│   └── features.py                 # Weekly provider panels, rolling medians, daily summaries
-├── network/
-│   ├── graph_builder.py            # Multi-relational NetworkX graph builder
-│   ├── provider_projection.py      # Weighted provider-to-provider projection
-│   ├── community.py                # Louvain community detection & ring identification
-│   ├── subgraph.py                 # Investigation case subgraph extractor with cohort bundling
-│   └── network_features.py         # Tabular network risk signals table
-├── rules/
-│   ├── r06_timing.py               # R06 Impossible Timing implementation
-│   ├── r07_referral.py             # R07 Referral Anomaly implementation
-│   ├── r08_geographic.py           # R08 Geographic Anomaly implementation
-│   ├── r09_identity.py             # R09 Shared Identity Link implementation
-│   ├── r10_burst.py                # R10 Burst / Spike implementation
-│   └── runner.py                   # Rule runner orchestrator for R06-R10 and all rules
-├── generator/
-│   └── synthetic_data.py           # Synthetic claims, providers, members, facilities generator
+│   └── rules_config.yaml            # Centralized threshold & policy configuration
 ├── eval/
-│   ├── evaluate.py                 # Ground truth evaluation & precision/recall metrics
-│   └── ring_recovery.py            # Fraud ring community recovery measurement
-└── tests/                          # 86 unit and end-to-end integration tests
+│   ├── __init__.py
+│   └── evaluator.py                 # Precision/recall evaluation against ground truth
+├── tests/                           # 52 unit & integration tests (89% coverage)
+│   ├── test_alert_contract.py
+│   ├── test_data_loader.py
+│   ├── test_evaluator.py
+│   ├── test_features.py
+│   ├── test_r01_duplicate_billing.py
+│   ├── test_r02_upcoding.py
+│   ├── test_r03_unbundling.py
+│   ├── test_r04_phantom_services.py
+│   ├── test_r05_excessive_utilization.py
+│   └── test_rule_runner.py
+└── pyproject.toml
 ```
 
 ---
 
-## Teammate Integration Guide
+## Detection Rules (R01 – R05)
 
-### 1. For R01–R05 Rule Engineers
-Your rules should import and return `Alert` and `Evidence` from `contracts.alert`:
+### R01 — Duplicate Billing
+- **Exact Duplicates (`HIGH`)**: Identifies claims with identical `member_id`, `billing_provider_id`, `cpt_code`, `service_from`, and `allowed_amount`.
+- **Near Duplicates (`MEDIUM`)**: Identifies claims with matching member, provider, CPT, and amount with service dates within $\pm 1$ day.
+- **Legitimate Exclusions**: Automatically suppresses claims containing anatomical or repeat procedure modifiers (`LT`, `RT`, `50`, `76`, `77`) and claims with voided/corrected status (`voided`, `adjusted`, `replacement`).
+
+### R02 — Upcoding Detection
+- **Provider E/M Distribution Shift (`HIGH`)**: Computes provider Level 4/5 Evaluation & Management (E/M) share and compares against peer specialty groups using robust Median Absolute Deviation (MAD) z-scores. Flags providers with `MAD z-score > 3.0` and `Level 4/5 share >= 2.0x peer median`.
+- **Claim-Level Evidence**: Attaches granular supporting evidence for Level-5 visits with low diagnostic complexity (`dx_complexity <= 1`) and abnormally short service durations below peer 25th percentile.
+
+### R03 — Unbundling Detection
+- **Comprehensive + Component Pairs (`MEDIUM`)**: Detects when a provider bills both comprehensive and component CPT codes on the same date for the same member without valid override modifiers (`59`, `25`, `XE`).
+- **Provider-Level Escalation (`HIGH`)**: Automatically escalates to `HIGH` severity when a provider's overall unbundling rate exceeds the peer 95th percentile.
+
+### R04 — Phantom Services Detection
+- **Deceased Member Billing (`CRITICAL`)**: Claims with `service_from > death_date`.
+- **Post-Termination Billing (`HIGH`)**: Claims with `service_from > termination_date` (or `enrollment_end`).
+- **Inpatient Overlap (`HIGH`)**: Outpatient claims billed during a confirmed inpatient admission at a different facility.
+- **Facility Status Checks (`HIGH` / `MEDIUM`)**: Claims billed before facility `open_date`, after `close_date`, or on days the facility does not operate.
+- **Orphan Ambulance (`MEDIUM`)**: Ambulance transport claims (`A0xxx`) with no associated hospital or emergency claim within $\pm 1$ day.
+- **Ghost Member Heuristic (`LOW`)**: Members with no historical claims for 12+ months presenting with 5+ claims with a single provider (weak signal, never triggers a case on its own).
+
+### R05 — Excessive Utilization Detection
+- **Member Rolling 30-Day Caps (`MEDIUM`)**: Enforces clinical rolling 30-day limits on sensitive procedure groups (e.g. max 12 physical therapy visits in any rolling 30-day window).
+- **Provider Mean Visits (`HIGH`)**: Detects providers whose average visits per member exceeds $3.0\times$ the peer group median.
+
+---
+
+## Shared Alert / Evidence Contract
+
+Every detection rule in Vigil-X conforms to the platform contract in [alert.py](file:///Users/shaktisaravananr07/Desktop/vigil-x/src/vigilx/models/alert.py):
 
 ```python
-from contracts.alert import Alert, Evidence, Severity
-
-# Inside your rule function:
-evidence = Evidence(
-    evidence_id=Evidence.generate_id("R01"),
-    rule_id="R01",
-    rule_version="1.0.0",
-    claim_ids=["C1023", "C1024"],
-    fields_matched=["procedure_code", "service_date", "member_id"],
-    plain_text="Duplicate claims submitted for identical service on same date.",
-    est_overpay=120.0,
-    severity=Severity.HIGH.value,
-    fp_notes="Check for bilateral procedure modifiers (RT/LT, 50).",
-)
+from vigilx.models.alert import Alert, Evidence, Severity
 
 alert = Alert(
-    alert_id=Alert.generate_id("R01"),
+    alert_id=Alert.make_id(),
     rule_id="R01",
-    rule_version="1.0.0",
-    entity_type="provider",
-    entity_id="PRV0042",
-    claim_ids=["C1023", "C1024"],
-    severity=Severity.HIGH.value,
-    evidence=[evidence],
+    rule_version="1.0",
+    entity_type="provider",      # "provider", "member", or "facility"
+    entity_id="PRV_12345",
+    claim_ids=["C101", "C102"],
+    severity=Severity.HIGH,      # LOW, MEDIUM, HIGH, CRITICAL
+    est_dollars=450.00,
+    evidence=[...],              # List of Evidence dataclasses
+    fp_notes=["..."]
 )
 ```
-Add your rule functions to `rules/runner.py` inside `run_all_rules(data)`:
+
+Each `Evidence` entry includes:
+- `evidence_id`: Unique identifier (e.g., `E-R01-xxxx`)
+- `rule_id` & `rule_version`
+- `claim_ids`: Tracing IDs for SIU inspection
+- `fields_matched`: Specific data columns triggering the rule
+- `plain_text`: Human-readable explanation for investigator reports
+- `est_overpay`: Estimated questionable dollars
+- `severity`: Item severity
+- `fp_notes`: Potential false positive considerations
+
+---
+
+## Integration Guide for Teammates (R06 – R10)
+
+The subsystem is architected for zero-friction integration. Teammates implementing R06–R10 do not need to modify any existing rule code:
+
 ```python
-# In rules/runner.py:
-from rules.r01_duplicate import detect_duplicate_billing
-alerts.extend(detect_duplicate_billing(data["claims"], config=config))
-```
+from vigilx.rules.base import BaseRule
+from vigilx.runner import create_full_runner
+from vigilx.models.alert import Alert, Severity
 
-### 2. For Case & Risk Scoring Engineers
-- Fetch all behavioral alerts via `run_network_behavior_rules(data)`.
-- Compute the network-level risk features table:
-```python
-from network.network_features import compute_network_features
+class MyNetworkRule(BaseRule):
+    rule_id = "R06"
 
-# P: provider projection graph, communities: Louvain clusters
-df_networks = compute_network_features(P, communities, claims, alerts)
-# Returns DataFrame with hard_link_score, referral_score, total_paid, hub_provider, etc.
-```
+    def detect(self, data: dict) -> list[Alert]:
+        # Implement R06 detection logic
+        return [...]
 
-### 3. For Frontend & SIU UI Engineers
-To display the interactive case graph for an investigator inspecting provider `PRV0042`:
-```python
-from network.subgraph import get_case_subgraph
+# Create runner pre-loaded with R01-R05 and register your rule
+runner = create_full_runner()
+runner.register(MyNetworkRule)
 
-case_graph = get_case_subgraph(
-    G=full_graph,
-    entity_id="PRV0042",
-    max_depth=2,
-    max_member_nodes=5,  # bundles members beyond 5 into cohort nodes to prevent hairballs
-)
-# Returns JSON-serializable dict:
-# {
-#   "nodes": [{"id": ..., "type": "provider", "label": ...}],
-#   "edges": [{"source": ..., "target": ..., "edge_type": "shared_bank_account", "weight": 1.0}],
-#   "cohorts": [{"cohort_id": ..., "count": 28, "member_ids": [...]}],
-#   "summary": {"total_nodes": 6, "total_edges": 8}
-# }
+# Run full pipeline
+data = {"claims": claims_df, "providers": providers_df}
+alerts = runner.run(data)
 ```
 
 ---
 
-## Running the System
+## Testing & Verification
 
-### 1. Install Dependencies
-```bash
-pip install -r requirements.txt
-```
+Run the complete test suite:
 
-### 2. Run Test Suite
 ```bash
 pytest -v
 ```
 
-### 3. Generate Synthetic Benchmark & Run Pipeline
-```python
-from generator.synthetic_data import generate_synthetic_data
-from rules.runner import run_network_behavior_rules
-from eval.evaluate import evaluate_rules
+Run test suite with coverage report:
 
-# Generate dataset with planted FWA fraud rings
-data = generate_synthetic_data(n_providers=200, n_members=5000, n_facilities=30, n_months=12)
-
-# Run detection
-alerts = run_network_behavior_rules(data)
-
-# Evaluate against ground truth (strictly isolated from detection)
-metrics = evaluate_rules(
-    alerts=alerts,
-    gt_claim_labels=data["gt_claim_labels"],
-    gt_entity_labels=data["gt_entity_labels"],
-    gt_scenarios=data["gt_scenarios"],
-)
-print("Precision & Recall:", metrics)
+```bash
+pytest --cov=vigilx --cov=eval --cov-report=term-missing
 ```
+
+**Status:** 52 passing tests, **89% overall test coverage**.
