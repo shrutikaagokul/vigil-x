@@ -218,7 +218,83 @@ def test_decision_and_audit_flow(client):
 
 
 def test_evaluation_endpoint(client):
-    """Evaluation endpoint returns stored benchmarks."""
+    """Evaluation endpoint returns stored benchmarks and derived EvaluationSummary contracts."""
     res = client.get("/api/evaluation")
     assert res.status_code == 200
-    assert "evaluations" in res.json()
+    data = res.json()
+    assert "evaluations" in data
+    assert "total_claims_evaluated" in data
+    assert "total_providers_evaluated" in data
+    assert "total_scenarios" in data
+    assert "claim_metrics" in data
+    assert "provider_metrics" in data
+    assert "ring_recovery_mean_jaccard" in data
+    assert "rule_performance" in data
+    assert "limitations" in data
+    assert len(data["limitations"]) > 0
+
+
+def test_queue_capacity_status_and_deferred_cases(client):
+    """Queue endpoint properly labels capacity_selected, queue_status, and retains deferred cases."""
+    res = client.get("/api/queue?capacity_hours=10.0")
+    assert res.status_code == 200
+    data = res.json()
+    assert data["total_cases"] >= len(data["items"])
+    assert len(data["items"]) > 0
+
+    queued_items = [i for i in data["items"] if i["queue_status"] == "QUEUED"]
+    deferred_items = [i for i in data["items"] if i["queue_status"] == "DEFERRED"]
+    assert len(queued_items) > 0
+    # Queue item contract checks
+    for item in data["items"]:
+        assert "capacity_selected" in item
+        assert "queue_status" in item
+        assert item["currency"] == "INR"
+        assert item["queue_status"] in ("QUEUED", "DEFERRED")
+
+    # Status filtering
+    res_q = client.get("/api/queue?capacity_hours=10.0&status=QUEUED")
+    assert res_q.status_code == 200
+    assert all(i["queue_status"] == "QUEUED" for i in res_q.json()["items"])
+
+
+def test_currency_and_null_preservation(client):
+    """Monetary amounts have explicit INR currency designation and non-financial evidence preserves null."""
+    q_res = client.get("/api/queue")
+    case_id = q_res.json()["items"][0]["case_id"]
+
+    # Case detail
+    c_res = client.get(f"/api/cases/{case_id}")
+    assert c_res.status_code == 200
+    c_data = c_res.json()
+    assert c_data["currency"] == "INR"
+
+    # Evidence ledger
+    ev_res = client.get(f"/api/cases/{case_id}/evidence")
+    assert ev_res.status_code == 200
+    for ev in ev_res.json()["evidence"]:
+        assert ev["currency"] == "INR"
+        # R06, R08, R09 do not have fake 0.0 overpayments
+        if ev["rule_id"] in ("R06", "R08", "R09"):
+            assert ev["est_overpay"] is None
+
+    # Summary
+    s_res = client.get("/api/summary")
+    assert s_res.status_code == 200
+    assert s_res.json()["currency"] == "INR"
+
+
+def test_run_all_rules_execution():
+    """Verify rules runner executes clean contracts for R01-R10."""
+    from generator.synthetic_data import generate_synthetic_data
+    from rules.runner import run_all_rules
+
+    data = generate_synthetic_data(n_providers=10, n_members=100, n_facilities=3, n_months=3, seed=99)
+    alerts = run_all_rules(data)
+    assert len(alerts) > 0
+    # Check that all alerts have required contract attributes
+    for a in alerts:
+        assert a.alert_id
+        assert a.rule_id
+        assert str(a.severity).upper().replace("SEVERITY.", "") in ("LOW", "MEDIUM", "HIGH", "CRITICAL")
+
