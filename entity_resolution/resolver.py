@@ -17,7 +17,7 @@ from dataclasses import dataclass, field, asdict
 from typing import Dict, List, Optional, Set, Tuple
 
 import pandas as pd
-from rapidfuzz import fuzz
+from difflib import SequenceMatcher
 
 from config.loader import get_rule_config
 
@@ -229,7 +229,7 @@ def _find_fuzzy_owner_links(
                     weight=weight + 0.2,
                 ))
             else:
-                score = fuzz.token_set_ratio(owners[i], owners[j])
+                score = SequenceMatcher(None, owners[i], owners[j]).ratio() * 100
                 if score >= threshold:
                     links.append(IdentityLink(
                         source_type="provider", source_id=pids[i],

@@ -1,34 +1,93 @@
 # ============================================================
-# Vigil-X — Rule Configuration
+# Vigil-X — Rule Configuration (R01–R10)
 # All thresholds are configurable. No magic numbers in code.
 # ============================================================
+
+# --- R01: Duplicate Billing ---
+R01:
+  enabled: true
+  version: "1.0.0"
+  severity_exact: "HIGH"
+  severity_near: "MEDIUM"
+  near_dup_day_window: 1
+  legitimate_modifiers: ["LT", "RT", "50", "76", "77"]
+  void_statuses: ["voided", "void", "reversed"]
+  corrected_statuses: ["corrected", "adjusted", "replacement"]
+
+# --- R02: Upcoding ---
+R02:
+  enabled: true
+  version: "1.0.0"
+  min_em_claims: 50
+  mad_z_threshold: 3.0
+  share_multiplier: 2.0
+  claim_level:
+    low_complexity_max: 1
+    duration_percentile: 25
+  severity: "HIGH"
+
+# --- R03: Unbundling ---
+R03:
+  enabled: true
+  version: "1.0.0"
+  base_severity: "MEDIUM"
+  escalated_severity: "HIGH"
+  allowed_override_modifiers: ["59", "25", "XE"]
+  provider_rate_percentile: 95
+
+# --- R04: Phantom / Impossible Claims ---
+R04:
+  enabled: true
+  version: "1.0.0"
+  severity_deceased: "CRITICAL"
+  severity_terminated: "CRITICAL"
+  severity_inpatient_overlap: "HIGH"
+  severity_closed_facility: "HIGH"
+  severity_non_operating_day: "HIGH"
+  severity_orphan_ambulance: "MEDIUM"
+  severity_ghost_member: "LOW"
+  ambulance_related_window_days: 1
+  ghost_member:
+    lookback_months: 12
+    min_same_provider_claims: 5
+
+# --- R05: Excessive Utilization ---
+R05:
+  enabled: true
+  version: "1.0.0"
+  base_severity: "MEDIUM"
+  escalated_severity: "HIGH"
+  provider_peer_multiplier: 3.0
+  utilization_caps:
+    physical_therapy:
+      code_prefixes: ["9714"]
+      max_per_30d: 12
+    psychotherapy:
+      code_prefixes: ["9083"]
+      max_per_30d: 8
+    chiropractic:
+      code_prefixes: ["9894"]
+      max_per_30d: 12
 
 # --- R06: Impossible Timing ---
 R06:
   enabled: true
   version: "1.0.0"
-  # A: Provider service-day overload
   provider_daily_max_minutes: 960       # 16 hours
-  # B: Impossible travel
   travel_speed_threshold_mph: 60        # required speed to flag
-  # C: Member overlap - minimum gap (minutes) to tolerate
   member_overlap_tolerance_minutes: 0
-  # Place-of-service codes considered telehealth (excluded from travel/overlap)
   telehealth_pos_codes: ["02", "10"]
+  min_claims_per_day: 2
   severity: "HIGH"
 
 # --- R07: Referral Anomaly ---
 R07:
   enabled: true
   version: "1.0.0"
-  # A: Referral concentration
   concentration_threshold: 0.70         # >70% to one target
   min_referral_count: 20                # minimum referrals to evaluate
-  # B: Reciprocal loop
   reciprocal_min_referrals: 15          # each direction >= 15
-  # C: Same-day high-cost lab (flag if referral + lab on same day)
   high_cost_lab_specialties: ["laboratory", "clinical_lab", "pathology"]
-  # D: Referral spike
   referral_zscore_threshold: 3.0
   referral_spike_trailing_days: 90
   severity: "MEDIUM"
@@ -37,12 +96,9 @@ R07:
 R08:
   enabled: true
   version: "1.0.0"
-  # A: Member-provider distance
   routine_care_distance_miles: 75       # flag if > 75 mi without referral
-  use_specialty_p99: true               # use specialty-specific p99 when available
-  # B: Multi-county provider
+  use_specialty_p99: true
   county_threshold: 5                   # flag if serves >= 5 counties
-  # C: Facility location type flags
   suspicious_facility_types: ["residential", "virtual_office", "po_box"]
   severity_distance: "MEDIUM"
   severity_county: "LOW"
@@ -52,9 +108,7 @@ R08:
 R09:
   enabled: true
   version: "1.0.0"
-  # Fuzzy matching
-  fuzzy_threshold: 88                   # rapidfuzz token_set_ratio threshold
-  # Identity link weights (for graph edge weighting)
+  fuzzy_threshold: 88
   link_weights:
     bank_hash: 1.0
     tin_hash: 1.0
@@ -63,20 +117,24 @@ R09:
     address_suite: 0.6
     address_no_suite: 0.4
     registered_agent: 0.8
-  # Legitimate group discount
   documented_group_discount: 0.5
+  min_shared_identifiers: 2
   severity: "MEDIUM"
 
 # --- R10: Burst / Spike ---
 R10:
   enabled: true
   version: "1.0.0"
-  spike_multiplier: 3.0                 # current week > 3x trailing median
+  spike_multiplier: 3.0                 # current window > 3x trailing median
   dollar_floor: 5000                    # minimum weekly amount to alert
   trailing_weeks: 12                    # trailing window for median
   min_history_weeks: 4                  # minimum history before alerting
+  daily_spike_multiplier: 4.0           # daily burst detection
+  hourly_spike_multiplier: 5.0          # hourly burst detection
   severity: "MEDIUM"
 
 # --- Global settings ---
 global:
   evidence_version: "1.0.0"
+  baseline_min_data_points: 5
+  insufficient_history_label: "insufficient_history"
