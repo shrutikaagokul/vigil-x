@@ -1,7 +1,7 @@
 """
 Graph builder for Vigil-X.
 
-Constructs a multi-relational graph from claims, referrals,
+Constructs a multi-relational heterogeneous graph from claims, referrals,
 provider identity links, and facility relationships.
 
 Every edge retains metadata explaining WHY it exists.
@@ -13,7 +13,7 @@ from typing import Dict, List, Optional, Set
 import networkx as nx
 import pandas as pd
 
-from entity_resolution.resolver import IdentityLink
+from entity_resolution.resolver import IdentityLink, normalize_address
 
 
 def build_graph(
@@ -27,31 +27,69 @@ def build_graph(
     """
     Build the Vigil-X investigation graph.
 
-    Nodes: providers, members (aggregated), facilities, owners
-    Edges: submits, has_claim, works_at, refers_to, shared_identity, etc.
+    Nodes: providers, members (aggregated/individual), facilities, owners, bank identities, addresses
+    Edges: submits, works_at, refers_to, shared_identity, owned_by, has_bank, located_at
 
     Returns a NetworkX MultiDiGraph with metadata on every edge.
     """
     G = nx.MultiDiGraph()
 
+    # Create mapping of provider alerts if provided
+    prov_alerts_map: Dict[str, List[str]] = {}
+    if alerts:
+        for a in alerts:
+            eid = getattr(a, "entity_id", None)
+            aid = getattr(a, "alert_id", None)
+            if eid and aid:
+                prov_alerts_map.setdefault(eid, []).append(aid)
+
     # --- Provider nodes ---
     for _, p in providers.iterrows():
         pid = p["provider_id"]
-        G.add_node(pid, node_type="provider",
-                   specialty=p.get("specialty", ""),
-                   name=p.get("name", ""),
-                   county=p.get("county", ""))
+        alert_ids = prov_alerts_map.get(pid, [])
+        G.add_node(
+            pid,
+            node_type="provider",
+            specialty=p.get("specialty", ""),
+            name=p.get("name", ""),
+            county=p.get("county", ""),
+            address=p.get("address", ""),
+            group_id=p.get("group_id", None),
+            alert_count=len(alert_ids),
+            alert_ids=alert_ids,
+        )
+
+        # Bank identity node
+        bank_hash = p.get("bank_hash")
+        if pd.notna(bank_hash) and str(bank_hash).strip():
+            bank_key = f"BANK:{bank_hash}"
+            if not G.has_node(bank_key):
+                G.add_node(bank_key, node_type="bank_identity", bank_hash=str(bank_hash))
+            G.add_edge(pid, bank_key, edge_type="has_bank", weight=1.0, evidence_ids=[])
+
+        # Address node
+        raw_addr = p.get("address")
+        norm_addr = normalize_address(raw_addr) if pd.notna(raw_addr) else None
+        if norm_addr:
+            addr_key = f"ADDR:{norm_addr}"
+            if not G.has_node(addr_key):
+                G.add_node(addr_key, node_type="address", address=norm_addr)
+            G.add_edge(pid, addr_key, edge_type="located_at", weight=1.0, evidence_ids=[])
 
     # --- Facility nodes and provider->facility edges ---
     if facilities is not None and not facilities.empty:
         for _, f in facilities.iterrows():
             fid = f["facility_id"]
-            G.add_node(fid, node_type="facility",
-                       name=f.get("name", ""),
-                       facility_type=f.get("facility_type", ""))
+            G.add_node(
+                fid,
+                node_type="facility",
+                name=f.get("name", ""),
+                facility_type=f.get("facility_type", ""),
+                county=f.get("county", ""),
+            )
 
         # Provider -> works_at -> Facility
-        if "facility_id" in claims.columns:
+        if not claims.empty and "facility_id" in claims.columns:
             prov_fac = (
                 claims.dropna(subset=["facility_id"])
                 .groupby(["provider_id", "facility_id"])
@@ -59,22 +97,28 @@ def build_graph(
                 .reset_index()
             )
             for _, row in prov_fac.iterrows():
-                G.add_edge(row["provider_id"], row["facility_id"],
-                           edge_type="works_at",
-                           weight=row["claim_count"],
-                           evidence_ids=[])
+                G.add_edge(
+                    row["provider_id"], row["facility_id"],
+                    edge_type="works_at",
+                    weight=row["claim_count"],
+                    evidence_ids=[],
+                )
 
     # --- Owner nodes ---
     if "owner_name" in providers.columns:
         owners = providers.dropna(subset=["owner_name"])
         for _, p in owners.iterrows():
-            owner_key = f"OWNER:{p['owner_name']}"
-            if not G.has_node(owner_key):
-                G.add_node(owner_key, node_type="owner", name=p["owner_name"])
-            G.add_edge(p["provider_id"], owner_key,
-                       edge_type="owned_by",
-                       weight=1,
-                       evidence_ids=[])
+            owner_name = p["owner_name"]
+            if str(owner_name).strip():
+                owner_key = f"OWNER:{owner_name}"
+                if not G.has_node(owner_key):
+                    G.add_node(owner_key, node_type="owner", name=owner_name)
+                G.add_edge(
+                    p["provider_id"], owner_key,
+                    edge_type="owned_by",
+                    weight=1.0,
+                    evidence_ids=[],
+                )
 
     # --- Referral edges ---
     if referrals is not None and not referrals.empty:
@@ -82,7 +126,7 @@ def build_graph(
             referrals.groupby(["referring_provider_id", "target_provider_id"])
             .agg(
                 count=("referral_id", "count"),
-                claim_ids=("claim_id", lambda x: list(x.dropna())),
+                claim_ids=("claim_id", lambda x: [c for c in x if pd.notna(c)]),
             )
             .reset_index()
         )

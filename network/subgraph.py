@@ -1,14 +1,72 @@
 """
 Case subgraph extraction for Vigil-X.
 
-Provides investigation-friendly subgraphs centered on a focal entity.
-Supports cohort aggregation to avoid graph hairballs.
+Provides investigation-friendly subgraphs centered on a focal entity or community.
+Supports cohort aggregation to avoid graph hairballs and generates explainable
+investigation story narratives for Member 3's UI and human SIU investigators.
 """
 from __future__ import annotations
 
 from typing import Dict, List, Optional, Set
 
 import networkx as nx
+
+
+def generate_investigation_story(
+    focal_entity: str,
+    nodes: List[Dict],
+    edges: List[Dict],
+    community_info: Optional[Dict] = None,
+) -> str:
+    """
+    Generate an investigation narrative explaining why the focal entity is connected.
+
+    Example:
+    Provider P102 is connected to 5 entities via 2 shared ownership relationships,
+    1 referral relationship, 1 shared facility, and 1 shared address.
+    """
+    other_nodes = [n for n in nodes if n.get("id") != focal_entity]
+    connected_provs = [n for n in other_nodes if n.get("node_type") == "provider"]
+    facilities = [n for n in other_nodes if n.get("node_type") == "facility"]
+    owners = [n for n in other_nodes if n.get("node_type") == "owner"]
+
+    edge_type_counts: Dict[str, int] = {}
+    for e in edges:
+        et = e.get("edge_type", "unknown")
+        edge_type_counts[et] = edge_type_counts.get(et, 0) + 1
+
+    connection_phrases = []
+    if edge_type_counts.get("shared_bank_hash", 0) > 0:
+        connection_phrases.append(f"{edge_type_counts['shared_bank_hash']} shared bank account link(s)")
+    if edge_type_counts.get("shared_tin_hash", 0) > 0:
+        connection_phrases.append(f"{edge_type_counts['shared_tin_hash']} shared TIN hash link(s)")
+    if (edge_type_counts.get("shared_owner_exact", 0) + edge_type_counts.get("shared_owner_fuzzy", 0) + edge_type_counts.get("shared_ownership", 0)) > 0:
+        cnt = edge_type_counts.get("shared_owner_exact", 0) + edge_type_counts.get("shared_owner_fuzzy", 0) + edge_type_counts.get("shared_ownership", 0)
+        connection_phrases.append(f"{cnt} shared ownership relationship(s)")
+    if edge_type_counts.get("refers_to", 0) > 0:
+        connection_phrases.append(f"{edge_type_counts['refers_to']} referral relationship(s)")
+    if (edge_type_counts.get("works_at", 0) + edge_type_counts.get("shared_facility", 0)) > 0:
+        cnt = edge_type_counts.get("works_at", 0) + edge_type_counts.get("shared_facility", 0)
+        connection_phrases.append(f"{cnt} facility connection(s)")
+    if (edge_type_counts.get("shared_address_suite", 0) + edge_type_counts.get("shared_address_no_suite", 0) + edge_type_counts.get("shared_address", 0)) > 0:
+        cnt = edge_type_counts.get("shared_address_suite", 0) + edge_type_counts.get("shared_address_no_suite", 0) + edge_type_counts.get("shared_address", 0)
+        connection_phrases.append(f"{cnt} shared address link(s)")
+
+    desc = f"Provider {focal_entity} is connected to {len(connected_provs)} provider(s)"
+    if facilities:
+        desc += f" and {len(facilities)} facility(ies)"
+    if connection_phrases:
+        desc += " via " + ", ".join(connection_phrases) + "."
+    else:
+        desc += "."
+
+    if community_info:
+        cid = community_info.get("community_id")
+        n_p = community_info.get("n_providers", len(connected_provs) + 1)
+        cat = community_info.get("investigation_category", "investigation candidate network")
+        desc += f" Provider belongs to Community C{cid:02d} ({n_p} providers), classified as a {cat}."
+
+    return desc
 
 
 def get_case_subgraph(
@@ -18,15 +76,17 @@ def get_case_subgraph(
     max_member_nodes: int = 5,
     edge_type_filter: Optional[Set[str]] = None,
     min_weight: float = 0.0,
+    community_info: Optional[Dict] = None,
 ) -> Dict:
     """
     Extract a compact investigation subgraph around a focal entity.
 
     Supports:
     - Focal provider + directly connected providers
-    - Relevant facilities and owners
+    - Relevant facilities, owners, bank nodes, address nodes
     - Cohort aggregation for shared members (avoids hairballs)
     - Filtering by edge type and weight
+    - Explainable investigation story
 
     Args:
         G: Full Vigil-X graph
@@ -35,12 +95,13 @@ def get_case_subgraph(
         max_member_nodes: Max individual member nodes before aggregation
         edge_type_filter: Only include these edge types (None = all)
         min_weight: Minimum edge weight to include
+        community_info: Optional community metadata dict
 
     Returns:
-        Dict with nodes, edges, cohorts, and summary
+        Dict with nodes, edges, cohorts, summary, and investigation_story
     """
     if entity_id not in G:
-        return {"nodes": [], "edges": [], "cohorts": [], "summary": {}}
+        return {"focal_entity": entity_id, "nodes": [], "edges": [], "cohorts": [], "summary": {}, "investigation_story": "Entity not found in network."}
 
     # BFS to collect neighborhood
     visited = {entity_id}
@@ -125,11 +186,15 @@ def get_case_subgraph(
                 "node_type": "member",
             })
 
+    # Narrative investigation story
+    story = generate_investigation_story(entity_id, subgraph_nodes, subgraph_edges, community_info)
+
     return {
         "focal_entity": entity_id,
         "nodes": subgraph_nodes,
         "edges": subgraph_edges,
         "cohorts": cohorts,
+        "investigation_story": story,
         "summary": {
             "n_nodes": len(subgraph_nodes),
             "n_edges": len(subgraph_edges),
@@ -155,7 +220,26 @@ def get_subgraph_by_community(
     """
     provider_ids = community.get("provider_ids", [])
     if not provider_ids:
-        return {"nodes": [], "edges": [], "cohorts": [], "summary": {}}
+        return {"nodes": [], "edges": [], "cohorts": [], "summary": {}, "investigation_story": "Empty community."}
 
     hub = community.get("hub_provider_id", provider_ids[0])
-    return get_case_subgraph(G, hub, max_depth=1)
+    return get_case_subgraph(G, hub, max_depth=1, community_info=community)
+
+
+def get_community_subgraph(
+    G: nx.MultiDiGraph,
+    community_id: int,
+    communities: List[Dict],
+) -> Dict:
+    """
+    Find community by ID and return its full subgraph.
+
+    Args:
+        G: Full multi-relational graph
+        community_id: Target community ID
+        communities: List of detected community dicts
+    """
+    match = [c for c in communities if c.get("community_id") == community_id]
+    if not match:
+        return {"nodes": [], "edges": [], "cohorts": [], "summary": {}, "investigation_story": f"Community {community_id} not found."}
+    return get_subgraph_by_community(G, match[0])

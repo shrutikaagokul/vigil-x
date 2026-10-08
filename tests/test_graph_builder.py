@@ -4,19 +4,20 @@ import pandas as pd
 import networkx as nx
 from network.graph_builder import build_graph, get_graph_summary
 from network.provider_projection import build_provider_projection
-from network.community import detect_communities
-from network.subgraph import get_case_subgraph
+from network.community import detect_communities, enrich_communities_with_claims
+from network.subgraph import get_case_subgraph, get_community_subgraph
+from network.network_features import compute_network_features, compute_provider_network_features
 from entity_resolution.resolver import IdentityLink
 
 
 def _make_data():
     providers = pd.DataFrame([
         {"provider_id": "P001", "name": "Dr. A", "specialty": "family_medicine",
-         "county": "Adams", "owner_name": "Owner A"},
+         "county": "Adams", "owner_name": "Owner A", "bank_hash": "BH001", "address": "100 Main St"},
         {"provider_id": "P002", "name": "Dr. B", "specialty": "cardiology",
-         "county": "Baker", "owner_name": "Owner B"},
+         "county": "Baker", "owner_name": "Owner B", "bank_hash": "BH002", "address": "200 Oak Ave"},
         {"provider_id": "P003", "name": "Dr. C", "specialty": "laboratory",
-         "county": "Adams", "owner_name": "Owner A"},
+         "county": "Adams", "owner_name": "Owner A", "bank_hash": "BH001", "address": "100 Main St"},
     ])
     claims = pd.DataFrame([
         {"claim_id": "C001", "member_id": "M001", "provider_id": "P001",
@@ -79,7 +80,7 @@ def test_provider_projection():
     G = build_graph(claims, providers, referrals, facilities)
     P = build_provider_projection(G)
     assert isinstance(P, nx.Graph)
-    assert P.number_of_nodes() <= 3  # only providers
+    assert P.number_of_nodes() == 3  # only providers
 
 
 def test_community_detection():
@@ -93,11 +94,29 @@ def test_community_detection():
     G = build_graph(claims, providers, referrals, facilities, identity_links=[link])
     P = build_provider_projection(G)
     communities = detect_communities(P, min_size=2)
-    # Should detect at least one community
     assert len(communities) >= 1
     comm = communities[0]
     assert "provider_ids" in comm
     assert "hub_provider_id" in comm
+    assert "investigation_category" in comm
+    assert comm["investigation_category"] in [
+        "high-risk network", "investigation candidate network", "connected provider cluster", "small provider cluster"
+    ]
+
+
+def test_provider_network_features():
+    providers, claims, referrals, facilities = _make_data()
+    G = build_graph(claims, providers, referrals, facilities)
+    P = build_provider_projection(G)
+    communities = detect_communities(P, min_size=1)
+    df_feat = compute_provider_network_features(P, G, communities, claims)
+
+    assert not df_feat.empty
+    assert "provider_id" in df_feat.columns
+    assert "community_id" in df_feat.columns
+    assert "network_degree" in df_feat.columns
+    assert "shared_ownership_count" in df_feat.columns
+    assert "referral_connection_count" in df_feat.columns
 
 
 def test_case_subgraph():
@@ -106,6 +125,18 @@ def test_case_subgraph():
     subgraph = get_case_subgraph(G, "P001")
     assert subgraph["focal_entity"] == "P001"
     assert len(subgraph["nodes"]) > 0
+    assert "investigation_story" in subgraph
+    assert "P001" in subgraph["investigation_story"]
+
+
+def test_community_subgraph_extraction():
+    providers, claims, referrals, facilities = _make_data()
+    G = build_graph(claims, providers, referrals, facilities)
+    P = build_provider_projection(G)
+    communities = detect_communities(P, min_size=1)
+    subgraph = get_community_subgraph(G, communities[0]["community_id"], communities)
+    assert len(subgraph["nodes"]) > 0
+    assert "investigation_story" in subgraph
 
 
 def test_subgraph_missing_entity():

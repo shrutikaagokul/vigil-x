@@ -2,7 +2,8 @@
 Community detection for Vigil-X.
 
 Uses Louvain community detection on the provider projection graph.
-For each community, computes descriptive statistics and identifies hub providers.
+For each community, computes descriptive statistics and identifies hub providers,
+classifying clusters into investigation candidates without making declarative fraud labels.
 """
 from __future__ import annotations
 
@@ -74,6 +75,16 @@ def detect_communities(
         # Referral link count
         referral_count = edge_types.get("refers_to", 0)
 
+        # Objective investigation category assessment (non-declarative)
+        if hard_link_count >= 2 or (hard_link_count >= 1 and referral_count >= 2):
+            category = "high-risk network"
+        elif hard_link_count >= 1 or referral_count >= 3:
+            category = "investigation candidate network"
+        elif len(members) >= 3:
+            category = "connected provider cluster"
+        else:
+            category = "small provider cluster"
+
         communities.append({
             "community_id": comm_id,
             "provider_ids": sorted(members),
@@ -82,6 +93,7 @@ def detect_communities(
             "edge_types": edge_types,
             "hard_link_count": hard_link_count,
             "referral_link_count": referral_count,
+            "investigation_category": category,
             "total_internal_weight": sum(
                 data.get("weight", 0)
                 for _, _, data in subgraph.edges(data=True)
@@ -109,15 +121,15 @@ def enrich_communities_with_claims(
 
         comm_claims = claims[claims["provider_id"].isin(prov_set)]
         comm["total_claims"] = len(comm_claims)
-        comm["total_dollars"] = float(comm_claims["paid_amount"].sum()) if not comm_claims.empty else 0
+        comm["total_dollars"] = float(comm_claims["paid_amount"].sum()) if not comm_claims.empty else 0.0
 
         if alerts:
             triggered = set()
             suspicious_claims = set()
             for a in alerts:
-                if a.entity_id in prov_set:
-                    triggered.add(a.rule_id)
-                    suspicious_claims.update(a.claim_ids)
+                if getattr(a, "entity_id", None) in prov_set:
+                    triggered.add(getattr(a, "rule_id", ""))
+                    suspicious_claims.update(getattr(a, "claim_ids", []))
             comm["triggered_rules"] = sorted(triggered)
             comm["suspicious_claim_count"] = len(suspicious_claims)
         else:
