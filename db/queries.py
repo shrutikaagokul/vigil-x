@@ -89,7 +89,7 @@ def get_summary_metrics(conn: sqlite3.Connection) -> SummaryResponse:
         claims_analyzed=claims_cnt,
         lines_analyzed=lines_cnt,
         paid_total=paid_total,
-        currency="INR",
+        currency="USD",
         alerts_total=alerts_cnt,
         entity_cases=ent_cases,
         network_cases=net_cases,
@@ -189,7 +189,7 @@ def get_queue_items(
             capacity_selected=selected,
             queue_status=q_status,
             capacity_rank=cap_rank,
-            currency="INR",
+            currency="USD",
         ))
 
     return items
@@ -259,7 +259,7 @@ def get_case_by_id(conn: sqlite3.Connection, case_id: str) -> Optional[CaseDetai
             source_artifact=e["source_artifact"],
             timestamp=e["timestamp"],
             fp_notes=e["fp_notes"],
-            currency="INR",
+            currency="USD",
         ))
 
     # Retrieve associated alerts
@@ -394,7 +394,7 @@ def get_case_evidence_ledger(conn: sqlite3.Connection, case_id: str) -> List[Cas
             source_artifact=e["source_artifact"],
             timestamp=e["timestamp"],
             fp_notes=e["fp_notes"],
-            currency="INR",
+            currency="USD",
         ))
     return items
 
@@ -424,9 +424,9 @@ def get_case_timeline(conn: sqlite3.Connection, case_id: str) -> List[Dict[str, 
         timeline.append({
             "event_type": "CLAIMS_BATCH",
             "date": row["service_date"],
-            "description": f"Processed {row['claim_count']} claims totalling ₹{row['total_paid']:,.2f} (INR).",
+            "description": f"Processed {row['claim_count']} claims totalling ${row['total_paid']:,.2f} (USD).",
             "amount": row["total_paid"],
-            "currency": "INR",
+            "currency": "USD",
         })
 
     # Get alerts triggering dates
@@ -453,7 +453,7 @@ def get_case_timeline(conn: sqlite3.Connection, case_id: str) -> List[Dict[str, 
             "date": ev["timestamp"][:10] if ev["timestamp"] else get_current_as_of()[:10],
             "description": f"Alert {ev['rule_id']} ({ev['rule_name']}): {ev['plain_text']}",
             "amount": amount_val,
-            "currency": "INR",
+            "currency": "USD",
         })
 
     timeline.sort(key=lambda x: str(x.get("date", "")), reverse=True)

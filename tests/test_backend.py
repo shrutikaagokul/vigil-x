@@ -249,7 +249,7 @@ def test_queue_capacity_status_and_deferred_cases(client):
     for item in data["items"]:
         assert "capacity_selected" in item
         assert "queue_status" in item
-        assert item["currency"] == "INR"
+        assert item["currency"] == "USD"
         assert item["queue_status"] in ("QUEUED", "DEFERRED")
 
     # Status filtering
@@ -259,29 +259,43 @@ def test_queue_capacity_status_and_deferred_cases(client):
 
 
 def test_currency_and_null_preservation(client):
-    """Monetary amounts have explicit INR currency designation and non-financial evidence preserves null."""
+    """Monetary amounts have explicit USD currency designation and non-financial evidence preserves null."""
     q_res = client.get("/api/queue")
-    case_id = q_res.json()["items"][0]["case_id"]
+    q_item = q_res.json()["items"][0]
+    case_id = q_item["case_id"]
 
     # Case detail
     c_res = client.get(f"/api/cases/{case_id}")
     assert c_res.status_code == 200
     c_data = c_res.json()
-    assert c_data["currency"] == "INR"
+    assert c_data["currency"] == "USD"
+    # Ensure no silent conversion or magnitude drift between queue and case detail
+    assert c_data["exposure_high"] == q_item["exposure_high"]
 
     # Evidence ledger
     ev_res = client.get(f"/api/cases/{case_id}/evidence")
     assert ev_res.status_code == 200
     for ev in ev_res.json()["evidence"]:
-        assert ev["currency"] == "INR"
+        assert ev["currency"] == "USD"
         # R06, R08, R09 do not have fake 0.0 overpayments
         if ev["rule_id"] in ("R06", "R08", "R09"):
             assert ev["est_overpay"] is None
 
+    # Timeline currency and formatting
+    tl_res = client.get(f"/api/cases/{case_id}/timeline")
+    assert tl_res.status_code == 200
+    events = tl_res.json()["timeline"]
+    for evt in events:
+        if "currency" in evt:
+            assert evt["currency"] == "USD"
+        if "description" in evt and "totalling" in evt["description"]:
+            assert "$" in evt["description"]
+            assert "₹" not in evt["description"]
+
     # Summary
     s_res = client.get("/api/summary")
     assert s_res.status_code == 200
-    assert s_res.json()["currency"] == "INR"
+    assert s_res.json()["currency"] == "USD"
 
 
 def test_run_all_rules_execution():

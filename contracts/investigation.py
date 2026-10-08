@@ -62,7 +62,7 @@ class CaseEvidenceItem(BaseModel):
     source_artifact: Optional[str] = None
     timestamp: Optional[str] = None
     fp_notes: Optional[str] = None
-    currency: Optional[str] = "INR"
+    currency: Optional[str] = "USD"
 
 
 class CaseHeader(BaseModel):
@@ -78,7 +78,7 @@ class CaseHeader(BaseModel):
     evidence_strength: float = Field(ge=0.0, le=1.0)
     exposure_low: Optional[float] = 0.0
     exposure_high: Optional[float] = 0.0
-    currency: str = "INR"
+    currency: str = "USD"
     members_affected: Optional[int] = 0
     claims_count: int = 0
     why_flagged: List[str] = Field(default_factory=list)
@@ -127,7 +127,7 @@ class QueueItem(BaseModel):
     queue_status: str = "QUEUED"
     capacity_rank: Optional[int] = None
     queue_id: Optional[str] = None
-    currency: str = "INR"
+    currency: str = "USD"
 
 
 class QueueResponse(BaseApiResponse):
@@ -263,7 +263,7 @@ class SummaryResponse(BaseApiResponse):
     claims_analyzed: int
     lines_analyzed: int
     paid_total: float
-    currency: str = "INR"
+    currency: str = "USD"
     alerts_total: int
     entity_cases: int
     network_cases: int

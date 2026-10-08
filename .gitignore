@@ -31,3 +31,7 @@ Thumbs.db
 
 # Generated test databases
 test_*.db
+
+# Generated raw data & quick demo artifacts
+data/
+outputs/quick/

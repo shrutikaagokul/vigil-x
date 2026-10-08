@@ -55,3 +55,12 @@ def check_llm_available() -> bool:
         or os.environ.get("ANTHROPIC_API_KEY")
         or os.environ.get("GEMINI_API_KEY")
     )
+
+
+def get_default_currency() -> str:
+    """
+    Return default currency designation for monetary values (USD).
+    Configurable via VIGILX_CURRENCY env var if needed.
+    """
+    return os.environ.get("VIGILX_CURRENCY", "USD").upper().strip()
+
