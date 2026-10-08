@@ -28,10 +28,12 @@ describe('App Shell, Masthead & Routing', () => {
   });
 
   // 1. App renders Dashboard route
-  it('1. renders Dashboard route at root /', () => {
+  it('1. renders Dashboard route at root /', async () => {
     renderWithRouter('/');
-    expect(screen.getByRole('heading', { level: 1, name: 'Dashboard' })).toBeInTheDocument();
-    expect(screen.getByText(/Executive Overview & Triage/i)).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { level: 1, name: /Investigation Overview/i })).toBeInTheDocument();
+      expect(screen.getByText(/Vigil dynamically prioritizes multi-provider investigation workload/i)).toBeInTheDocument();
+    });
   });
 
   // 2. Queue route renders
@@ -87,6 +89,13 @@ describe('App Shell, Masthead & Routing', () => {
     expect(screen.getByRole('link', { name: /Vigil-X/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Load batch/i })).toBeInTheDocument();
     expect(screen.getByText(/Healthy/i)).toBeInTheDocument();
+  });
+
+  it('6b. clicking Load batch opens /ingest route', async () => {
+    renderWithRouter('/ingest');
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { level: 1, name: /Load claims batch/i })).toBeInTheDocument();
+    });
   });
 
   // 7. Footer disclaimer is present

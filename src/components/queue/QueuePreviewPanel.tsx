@@ -32,6 +32,11 @@ export const QueuePreviewPanel: React.FC<QueuePreviewPanelProps> = ({
 
   const reasons = selectedCase.top_reasons && selectedCase.top_reasons.length > 0
     ? selectedCase.top_reasons.slice(0, 3)
+    : selectedCase.priority_reasons && selectedCase.priority_reasons.length > 0
+    ? selectedCase.priority_reasons.slice(0, 3).map((r, idx) => ({
+        text: r,
+        evidence_chip: selectedCase.rules_triggered[idx] || `E${idx + 1}`,
+      }))
     : [
         {
           text: selectedCase.primary_indicator,

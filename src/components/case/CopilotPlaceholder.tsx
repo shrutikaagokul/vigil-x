@@ -2,58 +2,85 @@ import React from 'react';
 
 export const CopilotPlaceholder: React.FC = () => {
   return (
-    <div className="bg-surface border border-border p-4 space-y-3">
-      <div className="border-b border-border pb-2 flex items-center justify-between">
+    <section className="bg-surface border border-border p-5 sm:p-6 space-y-6">
+      {/* Chapter Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border pb-3">
         <div>
-          <span className="text-[10px] font-mono text-ink-subtle uppercase tracking-wider">
-            Chapter 06 · Investigative Intelligence
+          <span className="text-[11px] font-mono text-ink-subtle uppercase tracking-wider block">
+            SIU Work Product · Chapter 06
           </span>
-          <h2 className="font-sans text-sm sm:text-base font-bold text-green-950 uppercase tracking-wide">
+          <h2 className="font-serif text-lg sm:text-xl font-bold text-green-950">
             AI Copilot &amp; Executive Brief
           </h2>
         </div>
-        <div className="flex items-center gap-1.5 font-mono text-[11px]">
-          <span className="px-2 py-0.5 bg-green-100 text-green-900 border border-green-300 font-semibold flex items-center gap-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-green-700" aria-hidden="true" />
+        <div className="flex items-center gap-2 font-mono text-xs">
+          <span className="px-2.5 py-1 bg-green-100 text-green-900 border border-green-300 font-semibold flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-green-700" aria-hidden="true" />
             Verified Grounding
           </span>
         </div>
       </div>
 
-      <p className="font-serif text-xs sm:text-sm text-ink leading-relaxed font-normal">
-        Automated executive brief synthesis and interactive case Q&amp;A strictly grounded in the case evidence ledger.
-      </p>
+      {/* Grounding Notice */}
+      <div className="p-4 bg-paper-subtle border border-border space-y-2">
+        <div className="flex items-center justify-between">
+          <span className="font-mono text-[11px] text-green-950 uppercase font-bold tracking-wider">
+            Guaranteed Grounding Architecture
+          </span>
+          <span className="font-mono text-[11px] text-ink-subtle">
+            Evidence-Citing Model
+          </span>
+        </div>
+        <p className="text-sm text-ink leading-relaxed font-sans font-normal">
+          All automated executive brief summaries and interactive case Q&amp;A are strictly grounded in the case evidence ledger. Every assertion requires explicit evidence citations (<span className="font-mono text-green-950 bg-paper px-1.5 py-0.5 border border-border font-semibold">E-R06-TIMING-001</span>, <span className="font-mono text-green-950 bg-paper px-1.5 py-0.5 border border-border font-semibold">E-R07-RECLOOP-003</span>). Unsubstantiated claims and speculative legal conclusions are strictly prohibited.
+        </p>
+      </div>
 
-      <div className="space-y-2 pt-1">
-        <div className="p-2.5 bg-paper-subtle border border-border text-xs space-y-1">
-          <div className="flex items-center justify-between">
-            <span className="font-mono text-[10px] text-green-950 uppercase font-bold">
-              Guaranteed Grounding Architecture
-            </span>
-            <span className="font-mono text-[10px] text-ink-subtle">
-              Evidence-Citing Model
-            </span>
-          </div>
-          <p className="font-serif text-xs text-ink-muted leading-relaxed">
-            All AI responses require explicit evidence ID citations (<span className="font-mono text-green-950 bg-paper px-1 border border-border font-semibold">E-R06-TIMING-001</span>, <span className="font-mono text-green-950 bg-paper px-1 border border-border font-semibold">E-R07-RECLOOP-003</span>). Unsubstantiated claims and speculative legal conclusions are strictly prohibited.
-          </p>
+      {/* Investigator Working Brief Draft */}
+      <div className="border border-border bg-paper-subtle p-5 space-y-4">
+        <div className="flex items-center justify-between border-b border-border pb-2">
+          <span className="text-xs font-mono font-bold text-green-950 uppercase">
+            Working Executive Summary Draft
+          </span>
+          <span className="text-[11px] font-mono bg-paper border border-border text-ink-muted px-2 py-0.5">
+            DRAFT · REQUIRES SIU VALIDATION
+          </span>
         </div>
 
-        <div className="p-2.5 bg-paper-subtle border border-border text-xs space-y-1">
-          <div className="flex items-center justify-between">
-            <span className="font-mono text-[10px] text-green-950 uppercase font-bold">
-              Executive Brief Generation
-            </span>
-            <span className="font-mono text-[10px] text-ink-subtle">
-              SIU Work Product
-            </span>
-          </div>
-          <p className="font-serif text-xs text-ink-muted leading-relaxed">
-            Generates structured summaries detailing financial exposure, key evidentiary findings, and prioritized clinical audit action recommendations.
+        <div className="space-y-3 text-sm text-ink font-sans">
+          <p className="leading-relaxed">
+            <strong>Case Overview:</strong> Prioritized investigation into focal provider billing velocities exhibiting coordinated multi-entity patterns. Analysis of 84 claims identifies $184,320 in direct line-item overpayment exposure across overlapping service dates and reciprocal referral cycles.
           </p>
+
+          <div className="p-3 bg-surface border border-border space-y-2 text-xs font-sans">
+            <strong className="font-mono text-[11px] text-green-950 uppercase block">
+              Key Evidentiary Findings
+            </strong>
+            <ul className="list-disc list-inside space-y-1 text-ink-muted">
+              <li>Concurrent billing across geographic facilities exceeding reasonable travel velocity (<span className="font-mono text-ink">E-R06-TIMING-001</span>).</li>
+              <li>Reciprocal patient referral loops between psychiatry and physical therapy clinics (<span className="font-mono text-ink">E-R07-RECLOOP-003</span>).</li>
+              <li>Shared corporate banking and NPI routing infrastructure across 6 affiliated providers (<span className="font-mono text-ink">E-R09-SHARDBK-006</span>).</li>
+            </ul>
+          </div>
+
+          <div className="p-3 bg-surface border border-border space-y-2 text-xs font-sans">
+            <strong className="font-mono text-[11px] text-green-950 uppercase block">
+              Recommended Investigation Actions
+            </strong>
+            <ol className="list-decimal list-inside space-y-1 text-ink-muted">
+              <li>Issue formal Request for Information (RFI) for medical records on claims C1023–C1045.</li>
+              <li>Cross-reference corporate registration records for shared bank account hash BANK_HASH_01.</li>
+              <li>Initiate clinical review with Medical Director for evaluation &amp; management overlap.</li>
+            </ol>
+          </div>
+        </div>
+
+        <div className="pt-2 border-t border-border flex items-center justify-between text-xs text-ink-subtle">
+          <span>Generated by Deterministic Case Synthesizer</span>
+          <span>Never presented as confirmed findings without investigator sign-off</span>
         </div>
       </div>
-    </div>
+    </section>
   );
 };
 

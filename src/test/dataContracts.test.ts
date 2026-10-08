@@ -192,4 +192,57 @@ describe('Checkpoint 2 — Data Contracts & Service Layer', () => {
     const health = await getHealth();
     expect(health.status).toBe('healthy');
   });
+
+  // 14. SIUQueueItem adapter maps 0.0-1.0 normalized float scores and priority reasons to QueueItem
+  it('14. adaptSIUQueueItemToQueueItem correctly maps SIU contracts into 0-100 presentation scale', async () => {
+    const { adaptSIUQueueItemToQueueItem } = await import('@/services/queueService');
+    const siuItem = {
+      queue_id: 'Q-CASE-2024-TEST',
+      case_id: 'CASE-2024-TEST',
+      provider_id: 'P9999',
+      rank: 1,
+      priority_score: 0.88,
+      priority_tier: 'HIGH',
+      risk_score: 0.92,
+      risk_tier: 'CRITICAL',
+      evidence_strength: 0.85,
+      confidence_score: 0.90,
+      estimated_exposure: 150000,
+      network_signal: 0.78,
+      anomaly_signal: 0.82,
+      future_risk_signal: 0.70,
+      behavioral_signal: 0.75,
+      case_status: 'OPEN',
+      queue_status: 'QUEUED',
+      capacity_selected: true,
+      capacity_rank: 1,
+      priority_reasons: [
+        'Billing velocity exceeds specialty 95th percentile',
+        'Shared banking infrastructure linked to 3 providers',
+      ],
+    };
+
+    const adapted = adaptSIUQueueItemToQueueItem(siuItem);
+    expect(adapted.case_id).toBe('CASE-2024-TEST');
+    expect(adapted.priority_score).toBe(88); // 0.88 -> 88
+    expect(adapted.risk_index).toBe(92);     // 0.92 -> 92
+    expect(adapted.severity).toBe('HIGH');
+    expect(adapted.confidence).toBe('High');
+    expect(adapted.top_reasons.length).toBe(2);
+    expect(adapted.top_reasons[0].text).toBe('Billing velocity exceeds specialty 95th percentile');
+    expect(adapted.capacity_selected).toBe(true);
+    expect(adapted.capacity_rank).toBe(1);
+    expect(adapted.slot).toBe('addressable');
+  });
+
+  // 15. Mock queue items contain SIU backend attributes
+  it('15. mock queue items contain SIU multi-signal fields and priority reasons', async () => {
+    const queue = await getQueue();
+    const hero = queue.items.find((i) => i.case_id === 'CASE-2024-0042');
+    expect(hero).toBeDefined();
+    expect(hero?.priority_reasons?.length).toBeGreaterThan(0);
+    expect(hero?.capacity_selected).toBe(true);
+    expect(hero?.network_signal).toBe(0.98);
+  });
 });
+

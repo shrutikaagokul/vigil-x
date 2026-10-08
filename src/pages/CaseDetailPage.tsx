@@ -4,7 +4,6 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { PageContainer } from '@/components/layout/PageContainer';
 import {
   CaseHeader,
-  RiskSummary,
   CaseTabs,
   DecisionModal,
   CaseLoadingState,
@@ -124,15 +123,15 @@ export const CaseDetailPage: React.FC = () => {
 
   return (
     <PageContainer>
-      <div className="space-y-4 pb-16">
+      <div className="space-y-5 pb-20 max-w-7xl mx-auto">
         {/* Decision Feedback Confirmation Banner */}
         {decisionFeedback && (
           <div
             data-testid="decision-confirmation-banner"
-            className="p-3 bg-green-50 border border-green-300 text-green-950 text-xs flex items-center justify-between"
+            className="p-3.5 bg-green-50 border border-green-300 text-green-950 text-xs font-sans flex items-center justify-between"
           >
             <div className="flex items-center gap-2">
-              <strong className="font-mono uppercase text-green-900">Decision Recorded:</strong>
+              <strong className="font-mono uppercase text-green-900 font-bold">Decision Recorded:</strong>
               <span>
                 {decisionFeedback.action.toUpperCase()} · &ldquo;{decisionFeedback.reason}&rdquo;
               </span>
@@ -140,82 +139,73 @@ export const CaseDetailPage: React.FC = () => {
             <button
               type="button"
               onClick={() => setDecisionFeedback(null)}
-              className="text-green-800 hover:text-green-950 font-bold px-1.5"
+              className="text-green-800 hover:text-green-950 font-bold px-2 py-0.5 text-sm"
+              aria-label="Dismiss banner"
             >
               &times;
             </button>
           </div>
         )}
 
-        {/* 1. Case Document Header */}
+        {/* 1. Spacious Case Document Header */}
         <CaseHeader
           caseItem={caseItem}
           onOpenDecisionModal={() => handleOpenDecision('accept')}
         />
 
-        {/* 2. Main Two-Column Dossier Workspace */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
-          {/* Left Column (4/12): Risk, Financial Exposure & Conflicting Signals */}
-          <div className="lg:col-span-4">
-            <RiskSummary caseItem={caseItem} />
+        {/* 2. Main Chapter Navigation Workspace */}
+        {isEvidenceLoading ? (
+          <div className="p-10 bg-surface border border-border text-center text-xs text-ink-muted animate-pulse font-mono">
+            Loading investigation evidence ledger...
           </div>
+        ) : (
+          <CaseTabs
+            caseItem={caseItem}
+            evidenceList={evidenceList}
+            timelineEvents={timelineEvents}
+            network={network}
+          />
+        )}
 
-          {/* Right Column (8/12): Chapters Workspace */}
-          <div className="lg:col-span-8">
-            {isEvidenceLoading ? (
-              <div className="p-8 bg-surface border border-border text-center text-xs text-ink-muted animate-pulse font-mono">
-                Loading evidence ledger records...
-              </div>
-            ) : (
-              <CaseTabs
-                caseItem={caseItem}
-                evidenceList={evidenceList}
-                timelineEvents={timelineEvents}
-                network={network}
-              />
-            )}
-          </div>
-        </div>
-
-        {/* 3. Docked Bottom Decision Bar */}
+        {/* 3. Docked Persistent Bottom Decision Bar */}
         <div
           data-testid="docked-decision-bar"
-          className="fixed bottom-0 left-0 right-0 z-40 bg-surface border-t border-border px-4 sm:px-8 py-2.5 flex flex-wrap items-center justify-between gap-3 shadow-none"
+          className="fixed bottom-0 left-0 right-0 z-40 bg-surface border-t border-border px-4 sm:px-8 py-3 flex flex-wrap items-center justify-between gap-3 shadow-none"
         >
-          <div className="flex items-center gap-2 text-xs font-mono">
-            <span className="font-bold text-green-950">{caseItem.id}</span>
+          <div className="flex items-center gap-2.5 text-xs font-mono">
+            <span className="font-bold text-green-950 bg-paper-subtle border border-border px-2 py-0.5">{caseItem.id}</span>
             <span className="text-border-strong">·</span>
-            <span className="text-ink-muted hidden sm:inline">Human-in-the-Loop Determination</span>
+            <span className="text-ink font-medium hidden sm:inline">Human-in-the-Loop Determination</span>
             <span className="text-border-strong hidden sm:inline">·</span>
-            <span className="text-[10px] text-ink-subtle uppercase">Rationale Mandatory</span>
+            <span className="text-[11px] text-ink-subtle uppercase">Rationale Mandatory</span>
           </div>
 
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={() => handleOpenDecision('accept')}
-              className="px-3 py-1 bg-green-800 text-white hover:bg-green-900 border border-green-700 text-xs font-semibold transition-colors"
+              className="px-3.5 py-1.5 bg-green-800 text-white hover:bg-green-900 border border-green-700 text-xs font-semibold transition-colors"
             >
               Accept
             </button>
             <button
               type="button"
-              onClick={() => handleOpenDecision('escalate')}
-              className="px-3 py-1 bg-paper-subtle border border-border text-ink hover:bg-surface text-xs font-medium transition-colors"
-            >
-              Escalate
-            </button>
-            <button
-              type="button"
               onClick={() => handleOpenDecision('needs_info')}
-              className="px-3 py-1 bg-paper-subtle border border-border text-ink hover:bg-surface text-xs font-medium transition-colors"
+              className="px-3.5 py-1.5 bg-paper-subtle border border-border text-ink hover:bg-surface text-xs font-medium transition-colors"
             >
               Needs info
             </button>
             <button
               type="button"
+              onClick={() => handleOpenDecision('escalate')}
+              className="px-3.5 py-1.5 bg-paper-subtle border border-border text-ink hover:bg-surface text-xs font-medium transition-colors"
+            >
+              Escalate
+            </button>
+            <button
+              type="button"
               onClick={() => handleOpenDecision('reject')}
-              className="px-3 py-1 bg-paper-subtle border border-border text-ink hover:bg-surface text-xs font-medium transition-colors"
+              className="px-3.5 py-1.5 bg-paper-subtle border border-border text-ink hover:bg-surface text-xs font-medium transition-colors"
             >
               Reject
             </button>

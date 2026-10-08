@@ -8,36 +8,42 @@ interface RiskSummaryProps {
 
 export const RiskSummary: React.FC<RiskSummaryProps> = ({ caseItem }) => {
   return (
-    <div className="space-y-3">
-      {/* Risk Index & Financial Exposure Assessment Panel */}
-      <div className="bg-surface border border-border p-4 space-y-3">
-        <div className="border-b border-border pb-2 flex items-center justify-between">
-          <span className="text-[10px] font-mono font-semibold text-green-950 uppercase tracking-wider">
-            Risk & Exposure Assessment
+    <section className="bg-surface border border-border p-5 sm:p-6 space-y-6">
+      {/* Chapter Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border pb-3">
+        <div>
+          <span className="text-[11px] font-mono text-ink-subtle uppercase tracking-wider block">
+            Risk &amp; Uncertainty Modeling · Chapter 04
           </span>
-          <span className="text-[10px] font-mono text-ink-subtle uppercase">
-            Confidence: <strong className="text-green-900 font-semibold">{caseItem.confidence}</strong>
-          </span>
+          <h2 className="font-serif text-lg sm:text-xl font-bold text-green-950">
+            Risk Score Decomposition
+          </h2>
         </div>
+        <div className="flex items-center gap-2 font-mono text-xs">
+          <span className="text-ink-subtle uppercase">Confidence Level:</span>
+          <strong className="text-green-900 font-bold bg-paper-subtle border border-border px-2 py-0.5">
+            {caseItem.confidence}
+          </strong>
+        </div>
+      </div>
 
-        {/* Major Risk Metric */}
-        <div className="space-y-1">
-          <div className="flex items-baseline justify-between">
-            <span className="text-xs font-semibold text-green-950 uppercase tracking-wider text-[11px]">
-              Risk Index
+      {/* Primary 3-Metric Score Hierarchy */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {/* Overall Risk Score */}
+        <div className="p-4 bg-paper-subtle border border-border space-y-2">
+          <span className="text-[11px] font-mono text-ink-subtle uppercase block tracking-wider">
+            Overall Risk Score
+          </span>
+          <div className="flex items-baseline gap-1.5">
+            <span
+              data-testid="risk-index-value"
+              className="font-serif text-3xl sm:text-4xl font-bold text-green-950 leading-none"
+            >
+              {caseItem.risk_index}
             </span>
-            <div className="flex items-baseline gap-1">
-              <span
-                data-testid="risk-index-value"
-                className="font-sans text-2xl sm:text-3xl font-bold text-green-950 leading-none"
-              >
-                {caseItem.risk_index}
-              </span>
-              <span className="text-xs font-mono text-ink-subtle">/ 100</span>
-            </div>
+            <span className="font-mono text-sm text-ink-subtle">/ 100</span>
           </div>
-
-          <div className="w-full bg-paper-subtle h-1.5 border border-border overflow-hidden">
+          <div className="w-full bg-paper h-2 border border-border overflow-hidden mt-1">
             <div
               className={`h-full ${
                 caseItem.risk_index >= 90
@@ -49,76 +55,88 @@ export const RiskSummary: React.FC<RiskSummaryProps> = ({ caseItem }) => {
               style={{ width: `${caseItem.risk_index}%` }}
             />
           </div>
-          <div className="flex justify-between text-[10px] font-mono text-ink-subtle">
-            <span>0 (Low)</span>
-            <span>50 (Moderate)</span>
-            <span>100 (Critical)</span>
-          </div>
-        </div>
-
-        {/* Operational Fact Ledger Table */}
-        <div className="pt-2 border-t border-border">
-          <table className="w-full text-xs font-sans">
-            <tbody>
-              <tr className="border-b border-border/70">
-                <td className="py-1.5 px-0 text-ink-muted">Financial exposure</td>
-                <td className="py-1.5 px-0 text-right font-mono font-bold text-green-950">
-                  ${caseItem.est_dollars.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                </td>
-              </tr>
-              <tr className="border-b border-border/70">
-                <td className="py-1.5 px-0 text-ink-muted">Identifiable overpay</td>
-                <td className="py-1.5 px-0 text-right font-mono font-bold text-brick">
-                  ${caseItem.est_overpay.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                </td>
-              </tr>
-              <tr className="border-b border-border/70">
-                <td className="py-1.5 px-0 text-ink-muted">Claims analyzed</td>
-                <td className="py-1.5 px-0 text-right font-mono font-bold text-ink">
-                  {caseItem.claim_count}
-                </td>
-              </tr>
-              <tr className="border-b border-border/70">
-                <td className="py-1.5 px-0 text-ink-muted">Triggered rule models</td>
-                <td className="py-1.5 px-0 text-right font-mono font-bold text-ink">
-                  {caseItem.rules_triggered.length}
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        {/* Triggered Rule Chips */}
-        <div className="pt-1.5 space-y-1">
-          <span className="text-[10px] font-mono text-ink-subtle uppercase block">
-            Rule Models ({caseItem.rules_triggered.length}):
+          <span className="text-[11px] font-mono text-ink-muted block pt-0.5">
+            Severity Tier: <strong className="text-critical">{caseItem.severity}</strong>
           </span>
-          <div className="flex flex-wrap gap-1 font-mono text-xs">
+        </div>
+
+        {/* Financial Exposure */}
+        <div className="p-4 bg-paper-subtle border border-border space-y-2">
+          <span className="text-[11px] font-mono text-ink-subtle uppercase block tracking-wider">
+            Financial Exposure
+          </span>
+          <span className="font-mono text-2xl sm:text-3xl font-bold text-green-950 block leading-none">
+            ${caseItem.est_dollars.toLocaleString()}
+          </span>
+          <span className="text-xs text-brick font-mono font-semibold block pt-1">
+            ${caseItem.est_overpay.toLocaleString()} direct overpayment
+          </span>
+          <span className="text-[11px] text-ink-muted block font-sans">
+            Calculated across {caseItem.claim_count} analyzed claims
+          </span>
+        </div>
+
+        {/* Behavioral Signals */}
+        <div className="p-4 bg-paper-subtle border border-border space-y-2">
+          <span className="text-[11px] font-mono text-ink-subtle uppercase block tracking-wider">
+            Active Signal Models
+          </span>
+          <span className="font-mono text-2xl sm:text-3xl font-bold text-green-950 block leading-none">
+            {caseItem.rules_triggered.length}
+          </span>
+          <div className="flex flex-wrap gap-1 font-mono text-[11px] pt-1">
             {caseItem.rules_triggered.map((rule) => (
               <span
                 key={rule}
-                className="px-1.5 py-0.2 bg-paper border border-border text-green-950 font-semibold"
+                className="px-1.5 py-0.5 bg-paper border border-border text-green-950 font-semibold"
               >
                 {rule}
               </span>
             ))}
           </div>
         </div>
+      </div>
 
-        {/* Primary Indicator */}
-        <div className="pt-2 border-t border-border space-y-1">
-          <span className="text-[10px] font-mono text-ink-subtle uppercase block">
-            Primary Behavioral Anomaly:
-          </span>
-          <p className="text-xs text-ink leading-relaxed font-normal p-2 bg-paper-subtle border border-border">
-            {caseItem.primary_indicator}
-          </p>
+      {/* Exposure & Overpayment Ledger Breakdown */}
+      <div className="p-4 bg-surface border border-border space-y-3">
+        <h3 className="text-xs font-mono font-bold uppercase text-green-950 tracking-wider">
+          Quantitative Risk Attributes
+        </h3>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm font-sans">
+            <tbody className="divide-y divide-border">
+              <tr>
+                <td className="py-2 text-ink-muted">Estimated Total Financial Exposure</td>
+                <td className="py-2 text-right font-mono font-bold text-green-950">
+                  ${caseItem.est_dollars.toLocaleString()}
+                </td>
+              </tr>
+              <tr>
+                <td className="py-2 text-ink-muted">Identifiable Line-Item Overpayment</td>
+                <td className="py-2 text-right font-mono font-bold text-brick">
+                  ${caseItem.est_overpay.toLocaleString()}
+                </td>
+              </tr>
+              <tr>
+                <td className="py-2 text-ink-muted">Claims Evaluated Under Triggered Rules</td>
+                <td className="py-2 text-right font-mono font-semibold text-ink">
+                  {caseItem.claim_count}
+                </td>
+              </tr>
+              <tr>
+                <td className="py-2 text-ink-muted">Deterministic Priority Score</td>
+                <td className="py-2 text-right font-mono font-semibold text-green-950">
+                  {caseItem.priority_score} / 100
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
 
-      {/* Conflicting Signals Sub-panel */}
+      {/* Conflicting & Mitigating Signals Sub-section */}
       <ConflictingSignals signals={caseItem.conflicting_signals} />
-    </div>
+    </section>
   );
 };
 

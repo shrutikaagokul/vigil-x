@@ -1,5 +1,6 @@
 /**
- * Investigation queue models and capacity-aware prioritization parameters.
+ * Investigation queue models, capacity-aware prioritization parameters,
+ * and backend SIUQueueItem contract alignment.
  */
 import { Severity } from './alert';
 import { ConfidenceLevel } from './case';
@@ -7,6 +8,10 @@ import { ConfidenceLevel } from './case';
 export type QueueSortOption = 'priority' | 'risk' | 'exposure' | 'network_complexity' | 'sla';
 
 export type SlaStatus = 'on_track' | 'warning' | 'breached';
+
+export type SIUPriorityTier = 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+
+export type SIUQueueStatus = 'QUEUED' | 'ASSIGNED' | 'IN_PROGRESS' | 'DEFERRED' | 'COMPLETED';
 
 export interface QueueReasonItem {
   readonly text: string;
@@ -23,6 +28,43 @@ export interface QueueQueryParams {
   readonly search?: string;
 }
 
+/**
+ * Direct TypeScript contract mapping to Python backend SIUQueueItem dataclass (siu/contracts.py).
+ */
+export interface BackendSIUQueueItem {
+  readonly queue_id: string;
+  readonly case_id: string;
+  readonly provider_id: string;
+  readonly rank: number;
+  readonly priority_score: number;       // 0.0 - 1.0 normalized float
+  readonly priority_tier: SIUPriorityTier | string;
+  readonly risk_score: number;           // 0.0 - 1.0 normalized float
+  readonly risk_tier: string;
+  readonly evidence_strength: number;     // 0.0 - 1.0 normalized float
+  readonly confidence_score: number;      // 0.0 - 1.0 normalized float
+  readonly estimated_exposure: number;
+  readonly network_signal: number;       // 0.0 - 1.0 normalized float
+  readonly anomaly_signal: number;       // 0.0 - 1.0 normalized float
+  readonly future_risk_signal: number;   // 0.0 - 1.0 normalized float
+  readonly behavioral_signal: number;    // 0.0 - 1.0 normalized float
+  readonly case_status: string;
+  readonly queue_status: SIUQueueStatus | string;
+  readonly capacity_selected: boolean;
+  readonly capacity_rank: number;
+  readonly priority_reasons: readonly string[];
+  readonly claim_count?: number;
+  readonly alert_count?: number;
+  readonly evidence_count?: number;
+  readonly community_id?: number | null;
+  readonly created_at?: string;
+  readonly queued_at?: string;
+  readonly case_builder_version?: string;
+  readonly siu_version?: string;
+}
+
+/**
+ * Frontend presentation queue item with SIU multi-signal enrichment.
+ */
 export interface QueueItem {
   readonly case_id: string;
   readonly title: string;
@@ -31,8 +73,8 @@ export interface QueueItem {
   readonly focal_provider_id: string;
   readonly focal_provider_name: string;
   readonly specialty: string;
-  readonly priority_score: number; // 0-100, dynamic based on capacity & risk
-  readonly risk_index: number;     // 0-100
+  readonly priority_score: number; // 0-100 display scale, dynamic based on capacity & risk
+  readonly risk_index: number;     // 0-100 display scale
   readonly severity: Severity;
   readonly confidence: ConfidenceLevel;
   readonly est_dollars: number;
@@ -54,6 +96,22 @@ export interface QueueItem {
   readonly sla_due_date: string;
   readonly assigned_to?: string | null;
   readonly _sample?: boolean;
+
+  // Backend SIU fields
+  readonly queue_id?: string;
+  readonly priority_tier?: SIUPriorityTier | string;
+  readonly risk_tier?: string;
+  readonly queue_status?: SIUQueueStatus | string;
+  readonly capacity_selected?: boolean;
+  readonly capacity_rank?: number;
+  readonly priority_reasons?: readonly string[];
+  readonly evidence_strength?: number;
+  readonly confidence_score?: number;
+  readonly network_signal?: number;
+  readonly anomaly_signal?: number;
+  readonly future_risk_signal?: number;
+  readonly behavioral_signal?: number;
+  readonly community_id?: number | null;
 }
 
 export interface CapacitySummary {
