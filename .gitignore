@@ -1,5 +1,25 @@
+<<<<<<< HEAD
+# Node
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+=======
 
 __pycache__/
 *.pyc
 .venv/
 .env
+>>>>>>> eb5d5d808265cd3d334785070c1b86d48ed9027a
