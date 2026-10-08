@@ -33,7 +33,7 @@ export const DashboardPosture: React.FC<DashboardPostureProps> = ({ summary, que
           <h3 className="font-serif text-[1.125rem] font-semibold text-[#0B1A12]">
             Queue Severity Breakdown
           </h3>
-          <p className="text-[0.8125rem] text-[#4F5F55]">
+          <p className="text-sm text-[#4F5F55]">
             Distribution of prioritized cases across triage severity tiers.
           </p>
         </div>
@@ -71,12 +71,12 @@ export const DashboardPosture: React.FC<DashboardPostureProps> = ({ summary, que
           <h3 className="font-serif text-[1.125rem] font-semibold text-[#0B1A12]">
             Top Risk Pattern Categories
           </h3>
-          <p className="text-[0.8125rem] text-[#4F5F55]">
+          <p className="text-sm text-[#4F5F55]">
             Active signal clusters identified across provider network data.
           </p>
         </div>
 
-        <div className="space-y-2 text-[0.8125rem]">
+        <div className="space-y-2 text-sm">
           {topCategories.map((cat, idx) => (
             <div
               key={idx}

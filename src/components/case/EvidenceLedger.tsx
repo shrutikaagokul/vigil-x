@@ -53,14 +53,14 @@ export const EvidenceLedger: React.FC<EvidenceLedgerProps> = ({
       {/* Table Header & Record Counter */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border pb-3">
         <div>
-          <span className="text-[11px] font-mono text-ink-subtle uppercase tracking-wider block">
-            Evidentiary Audit Trail · Chapter 02
-          </span>
           <h2 className="font-serif text-lg sm:text-xl font-bold text-green-950">
             Evidence Ledger
           </h2>
+          <p className="text-sm text-ink-muted mt-0.5 font-sans">
+            Grounded item-level findings with claim provenance and severity classifications.
+          </p>
         </div>
-        <span className="text-xs font-mono text-ink-muted bg-paper-subtle border border-border px-2.5 py-1">
+        <span className="text-xs font-mono text-ink-muted bg-paper-subtle border border-border px-2.5 py-1 shrink-0">
           {evidenceList.length} Grounded Records
         </span>
       </div>

@@ -9,18 +9,18 @@ interface RiskSummaryProps {
 export const RiskSummary: React.FC<RiskSummaryProps> = ({ caseItem }) => {
   return (
     <section className="bg-surface border border-border p-5 sm:p-6 space-y-6">
-      {/* Chapter Header */}
+      {/* Section Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border pb-3">
         <div>
-          <span className="text-[11px] font-mono text-ink-subtle uppercase tracking-wider block">
-            Risk &amp; Uncertainty Modeling · Chapter 04
-          </span>
           <h2 className="font-serif text-lg sm:text-xl font-bold text-green-950">
             Risk Score Decomposition
           </h2>
+          <p className="text-sm text-ink-muted mt-0.5 font-sans">
+            Multi-signal scoring components, financial exposure breakdown, and model confidence.
+          </p>
         </div>
-        <div className="flex items-center gap-2 font-mono text-xs">
-          <span className="text-ink-subtle uppercase">Confidence Level:</span>
+        <div className="flex items-center gap-2 font-mono text-xs shrink-0">
+          <span className="text-ink-subtle uppercase text-[11px]">Confidence Level:</span>
           <strong className="text-green-900 font-bold bg-paper-subtle border border-border px-2 py-0.5">
             {caseItem.confidence}
           </strong>
@@ -66,10 +66,10 @@ export const RiskSummary: React.FC<RiskSummaryProps> = ({ caseItem }) => {
             Financial Exposure
           </span>
           <span className="font-mono text-2xl sm:text-3xl font-bold text-green-950 block leading-none">
-            ${caseItem.est_dollars.toLocaleString()}
+            ₹{caseItem.est_dollars.toLocaleString('en-IN')}
           </span>
           <span className="text-xs text-brick font-mono font-semibold block pt-1">
-            ${caseItem.est_overpay.toLocaleString()} direct overpayment
+            ₹{caseItem.est_overpay.toLocaleString('en-IN')} direct overpayment
           </span>
           <span className="text-[11px] text-ink-muted block font-sans">
             Calculated across {caseItem.claim_count} analyzed claims
@@ -108,13 +108,13 @@ export const RiskSummary: React.FC<RiskSummaryProps> = ({ caseItem }) => {
               <tr>
                 <td className="py-2 text-ink-muted">Estimated Total Financial Exposure</td>
                 <td className="py-2 text-right font-mono font-bold text-green-950">
-                  ${caseItem.est_dollars.toLocaleString()}
+                  ₹{caseItem.est_dollars.toLocaleString('en-IN')}
                 </td>
               </tr>
               <tr>
                 <td className="py-2 text-ink-muted">Identifiable Line-Item Overpayment</td>
                 <td className="py-2 text-right font-mono font-bold text-brick">
-                  ${caseItem.est_overpay.toLocaleString()}
+                  ₹{caseItem.est_overpay.toLocaleString('en-IN')}
                 </td>
               </tr>
               <tr>

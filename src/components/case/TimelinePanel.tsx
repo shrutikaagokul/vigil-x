@@ -17,17 +17,17 @@ export const TimelinePanel: React.FC<TimelinePanelProps> = ({ events, onSelectCl
 
   return (
     <section className="bg-surface border border-border p-5 sm:p-6 space-y-5">
-      {/* Chapter Header */}
+      {/* Section Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border pb-3">
         <div>
-          <span className="text-[11px] font-mono text-ink-subtle uppercase tracking-wider block">
-            Chronological Audit Sequence · Chapter 05
-          </span>
           <h2 className="font-serif text-lg sm:text-xl font-bold text-green-950">
             Investigation Timeline &amp; Context
           </h2>
+          <p className="text-sm text-ink-muted mt-0.5 font-sans">
+            Chronological claim batches, rule trigger events, and entity activity.
+          </p>
         </div>
-        <span className="text-xs font-mono text-ink-muted bg-paper-subtle border border-border px-2.5 py-1">
+        <span className="text-xs font-mono text-ink-muted bg-paper-subtle border border-border px-2.5 py-1 shrink-0">
           {events.length} Sequenced Events
         </span>
       </div>

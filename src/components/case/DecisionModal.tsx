@@ -95,8 +95,8 @@ export const DecisionModal: React.FC<DecisionModalProps> = ({
               <div className="grid grid-cols-2 gap-2">
                 {[
                   { value: 'accept', label: 'Accept', desc: 'Proceed with full SIU audit' },
-                  { value: 'escalate', label: 'Escalate', desc: 'Medical Director clinical review' },
                   { value: 'needs_info', label: 'Needs info', desc: 'Request clarifying medical records' },
+                  { value: 'escalate', label: 'Escalate', desc: 'Medical Director clinical review' },
                   { value: 'reject', label: 'Reject', desc: 'Dismiss case / verified legitimate' },
                 ].map((opt) => (
                   <label

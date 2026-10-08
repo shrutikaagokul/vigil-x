@@ -41,9 +41,9 @@ export const QueueSummary: React.FC<QueueSummaryProps> = ({
       <span className="text-border-strong hidden sm:inline" aria-hidden="true">·</span>
 
       <div className="flex items-center gap-1">
-        <strong className="font-mono font-bold text-green-950">${(totalExposureDollars / 1000).toFixed(0)}k</strong>
+        <strong className="font-mono font-bold text-green-950">₹{(totalExposureDollars / 1000).toFixed(0)}k</strong>
         <span className="text-ink-muted">queue exposure</span>
-        <span className="text-[11px] font-mono text-ink-subtle">(est. recov: ${(totalOverpayDollars / 1000).toFixed(0)}k)</span>
+        <span className="text-[11px] font-mono text-ink-subtle">(est. recov: ₹{(totalOverpayDollars / 1000).toFixed(0)}k)</span>
       </div>
     </div>
   );

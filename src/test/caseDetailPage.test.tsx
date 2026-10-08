@@ -94,8 +94,11 @@ describe('Checkpoint 5 — Case Dossier & Evidence Ledger (/cases/:id)', () => {
   });
 
   // 8. Claim IDs are traceable
-  it('8. claim IDs are rendered as clickable trace buttons', async () => {
+  it('8. claim IDs are rendered as clickable trace buttons in evidence ledger', async () => {
     renderCaseWithRouter('/cases/CASE-2024-0042');
+
+    const evidenceTab = await screen.findByRole('tab', { name: /EVIDENCE/i });
+    await userEvent.click(evidenceTab);
 
     await waitFor(() => {
       const claimButtons = screen.getAllByRole('button', { name: /C1023/i });
@@ -110,13 +113,16 @@ describe('Checkpoint 5 — Case Dossier & Evidence Ledger (/cases/:id)', () => {
     await waitFor(() => {
       const overpayElements = screen.getAllByTestId('evidence-overpay');
       expect(overpayElements.length).toBeGreaterThan(0);
-      expect(overpayElements[0]).toHaveTextContent(/\$\d+/);
+      expect(overpayElements[0]).toHaveTextContent(/₹\d+/);
     });
   });
 
   // 10. fp_notes render when present
-  it('10. false positive notes render on evidence cards', async () => {
+  it('10. false positive notes render on evidence cards in evidence ledger', async () => {
     renderCaseWithRouter('/cases/CASE-2024-0042');
+
+    const evidenceTab = await screen.findByRole('tab', { name: /EVIDENCE/i });
+    await userEvent.click(evidenceTab);
 
     await waitFor(() => {
       const fpBoxes = screen.getAllByTestId('fp-notes-box');
@@ -168,9 +174,9 @@ describe('Checkpoint 5 — Case Dossier & Evidence Ledger (/cases/:id)', () => {
     const submitSpy = vi.spyOn(caseService, 'submitDecision');
     renderCaseWithRouter('/cases/CASE-2024-0042');
 
-    // 14. Open decision modal
-    const recordDecisionButton = await screen.findByRole('button', { name: /Record Human Decision/i });
-    await userEvent.click(recordDecisionButton);
+    // 14. Open decision modal from docked bottom decision bar
+    const acceptButton = await screen.findByRole('button', { name: /^Accept$/i });
+    await userEvent.click(acceptButton);
 
     expect(screen.getByRole('heading', { level: 2, name: /Record Investigation Decision/i })).toBeInTheDocument();
 

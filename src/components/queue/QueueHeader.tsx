@@ -1,8 +1,9 @@
 import React from 'react';
+import { formatCurrency } from '@/utils/currency';
 
 interface QueueHeaderProps {
   readonly fitCount: number;
-  readonly totalAtRisk: number; // in INR
+  readonly totalAtRisk: number;
   readonly horizon: string;
   readonly onHorizonChange: (horizon: string) => void;
 }
@@ -13,19 +14,7 @@ export const QueueHeader: React.FC<QueueHeaderProps> = ({
   horizon,
   onHorizonChange,
 }) => {
-  // Format totalAtRisk compactly e.g. "₹1.8 Cr" or "₹38 L"
-  const formattedAmount = (() => {
-    const abs = Math.abs(totalAtRisk);
-    if (abs >= 1e7) {
-      const cr = (abs / 1e7).toFixed(1).replace(/\.0$/, '');
-      return `₹${cr} Cr`;
-    }
-    if (abs >= 1e5) {
-      const l = (abs / 1e5).toFixed(1).replace(/\.0$/, '');
-      return `₹${l} L`;
-    }
-    return `₹${Math.round(abs).toLocaleString('en-IN')}`;
-  })();
+  const formattedAmount = formatCurrency(totalAtRisk, 'compact');
 
   const horizons = [
     { label: '30 days', value: '30d' },

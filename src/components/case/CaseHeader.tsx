@@ -4,10 +4,10 @@ import { Case } from '@/types/case';
 
 interface CaseHeaderProps {
   readonly caseItem: Case;
-  readonly onOpenDecisionModal: () => void;
+  readonly onOpenDecisionModal?: () => void;
 }
 
-export const CaseHeader: React.FC<CaseHeaderProps> = ({ caseItem, onOpenDecisionModal }) => {
+export const CaseHeader: React.FC<CaseHeaderProps> = ({ caseItem }) => {
   const severityClass = {
     CRITICAL: 'bg-[#FCEBEA] text-[#9E1F14] border-[#F0C2BE]',
     HIGH: 'bg-[#FBEAE6] text-[#7D2D1B] border-[#F2C4B8]',
@@ -32,11 +32,11 @@ export const CaseHeader: React.FC<CaseHeaderProps> = ({ caseItem, onOpenDecision
             to="/queue"
             className="text-green-800 hover:text-green-950 font-semibold flex items-center gap-1 hover:underline"
           >
-            ← QUEUE
+            ← Queue
           </Link>
           <span className="text-border-strong">/</span>
-          <span className="font-mono text-ink-subtle uppercase text-[11px] tracking-wider">
-            CASE DOSSIER
+          <span className="font-mono text-ink-subtle text-xs">
+            {caseItem.id}
           </span>
         </div>
 
@@ -90,52 +90,47 @@ export const CaseHeader: React.FC<CaseHeaderProps> = ({ caseItem, onOpenDecision
             <span className="font-mono text-xs uppercase text-ink">
               {caseItem.specialty.replace('_', ' ')}
             </span>
-            <span className="text-border-strong">·</span>
-            <span className="font-mono text-xs text-ink-subtle">
-              SLA Due: {new Date(caseItem.sla_due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-            </span>
+            {caseItem.sla_due_date && (
+              <>
+                <span className="text-border-strong">·</span>
+                <span className="font-mono text-xs text-ink-subtle">
+                  SLA Due: {new Date(caseItem.sla_due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                </span>
+              </>
+            )}
           </div>
         </div>
 
         {/* Right Column: Prominent Risk & Financial Exposure Block */}
-        <div className="shrink-0 flex flex-col sm:flex-row lg:flex-col items-start lg:items-end justify-between gap-4 p-4 bg-paper-subtle border border-border">
-          <div className="flex items-baseline gap-4">
-            <div className="text-left lg:text-right">
-              <span className="text-[11px] font-mono font-semibold uppercase text-ink-subtle block tracking-wider">
-                Risk Index
+        <div className="shrink-0 flex items-center justify-between gap-6 p-4 bg-paper-subtle border border-border">
+          <div className="text-left">
+            <span className="text-[11px] font-mono font-semibold uppercase text-ink-subtle block tracking-wider">
+              Risk Index
+            </span>
+            <div className="flex items-baseline gap-1 mt-0.5">
+              <span
+                data-testid="risk-index-value"
+                className="font-serif text-3xl sm:text-4xl font-bold text-green-950 leading-none"
+              >
+                {caseItem.risk_index}
               </span>
-              <div className="flex items-baseline gap-1">
-                <span
-                  data-testid="risk-index-value"
-                  className="font-serif text-3xl sm:text-4xl font-bold text-green-950 leading-none"
-                >
-                  {caseItem.risk_index}
-                </span>
-                <span className="font-mono text-sm text-ink-subtle">/100</span>
-              </div>
-            </div>
-
-            <div className="border-l border-border pl-4 text-left">
-              <span className="text-[11px] font-mono font-semibold uppercase text-ink-subtle block tracking-wider">
-                Total Exposure
-              </span>
-              <span className="font-mono text-lg sm:text-xl font-bold text-green-950 block">
-                ${caseItem.est_dollars.toLocaleString()}
-              </span>
-              <span className="text-xs text-brick font-mono font-semibold">
-                ${caseItem.est_overpay.toLocaleString()} overpayment
-              </span>
+              <span className="font-mono text-sm text-ink-subtle">/100</span>
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={onOpenDecisionModal}
-            className="w-full sm:w-auto px-4 py-2 bg-green-800 text-white text-xs font-semibold hover:bg-green-900 border border-green-700 transition-colors flex items-center justify-center gap-1.5"
-          >
-            <span>Record Human Decision</span>
-            <span aria-hidden="true">→</span>
-          </button>
+          <div className="border-l border-border pl-6 text-left">
+            <span className="text-[11px] font-mono font-semibold uppercase text-ink-subtle block tracking-wider">
+              Total Exposure
+            </span>
+            <span className="font-mono text-lg sm:text-xl font-bold text-green-950 block mt-0.5">
+              ₹{caseItem.est_dollars.toLocaleString('en-IN')}
+            </span>
+            {caseItem.est_overpay > 0 && (
+              <span className="text-xs text-brick font-mono font-semibold">
+                ₹{caseItem.est_overpay.toLocaleString('en-IN')} overpayment
+              </span>
+            )}
+          </div>
         </div>
       </div>
     </header>

@@ -12,17 +12,17 @@ export const NetworkPlaceholder: React.FC<NetworkPlaceholderProps> = ({ network,
 
   return (
     <section className="bg-surface border border-border p-5 sm:p-6 space-y-5">
-      {/* Chapter Header */}
+      {/* Section Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border pb-3">
         <div>
-          <span className="text-[11px] font-mono text-ink-subtle uppercase tracking-wider block">
-            Entity Topology · Chapter 03
-          </span>
           <h2 className="font-serif text-lg sm:text-xl font-bold text-green-950">
             Network Subgraph Summary
           </h2>
+          <p className="text-sm text-ink-muted mt-0.5 font-sans">
+            Multi-provider topology, referral concentration, and shared corporate infrastructure.
+          </p>
         </div>
-        <span className="text-xs font-mono bg-paper-subtle border border-border px-2.5 py-1 text-green-950 font-semibold">
+        <span className="text-xs font-mono bg-paper-subtle border border-border px-2.5 py-1 text-green-950 font-semibold shrink-0">
           ID: {networkId}
         </span>
       </div>

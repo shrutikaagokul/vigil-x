@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { QueueItem } from '@/types/queue';
-import { formatINR } from '@/utils/currency';
+import { formatCurrency } from '@/utils/currency';
 
 interface QueuePreviewPanelProps {
   readonly selectedCase: QueueItem | null;
@@ -83,7 +83,7 @@ export const QueuePreviewPanel: React.FC<QueuePreviewPanelProps> = ({
       {/* Cost of delay for deferred cases */}
       {isDeferred && (
         <div className="text-[0.9375rem] text-[#9E3626] font-medium pt-1">
-          Waiting 4 weeks puts about {formatINR(selectedCase.cost_of_delay_4w, 'compact')} more at risk
+          Waiting 4 weeks puts about {formatCurrency(selectedCase.cost_of_delay_4w, 'compact')} more at risk
         </div>
       )}
 
@@ -94,7 +94,7 @@ export const QueuePreviewPanel: React.FC<QueuePreviewPanelProps> = ({
       <div className="text-[1rem] leading-[1.5rem] text-[#14201A] font-normal">
         Confidence <strong className="font-semibold text-[#14201A]">{selectedCase.confidence}</strong>
         {' · '}
-        Members affected <strong className="font-semibold text-[#14201A]">{selectedCase.members_affected || 412}</strong>
+        Members affected <strong className="font-semibold text-[#14201A]">{selectedCase.members_affected != null ? selectedCase.members_affected.toLocaleString() : '—'}</strong>
       </div>
 
       {/* Primary Action Button */}

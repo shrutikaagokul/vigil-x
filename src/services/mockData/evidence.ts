@@ -97,7 +97,7 @@ export const MOCK_EVIDENCE: readonly Evidence[] = [
     claim_ids: ['C1023', 'C1024', 'C1025', 'C1026', 'C1027', 'C1030'],
     fields_matched: ['paid_amount', 'service_date', 'weekly_panel_total'],
     plain_text:
-      'Surge billing volume: Trailing 4-week billing total ($184,200) represents a 4.2x spike over historical 12-week median baseline ($43,800/month), exceeding the 3.0x anomaly threshold.',
+      'Surge billing volume: Trailing 4-week billing total (₹184,200) represents a 4.2x spike over historical 12-week median baseline (₹43,800/month), exceeding the 3.0x anomaly threshold.',
     est_overpay: 62500.0,
     severity: 'CRITICAL',
     fp_notes: 'Check for recent onboarding of new clinic locations or provider panel expansion.',
