@@ -1,0 +1,53 @@
+# ==============================================================================
+# VIGIL-X CASE BUILDER CONFIGURATION
+# Standalone, explainable provider investigation case configuration.
+# ==============================================================================
+
+case_builder:
+  version: "1.0.0"
+
+# ------------------------------------------------------------------------------
+# Case Eligibility Criteria
+# Determines which providers qualify for consolidated investigation case creation.
+# A provider qualifies if:
+#   (risk_score >= min_risk_score AND risk_tier in eligible_risk_tiers)
+#   OR evidence_strength >= min_evidence_strength
+#   OR all_providers is true.
+# ------------------------------------------------------------------------------
+eligibility:
+  min_risk_score: 0.25
+  eligible_risk_tiers:
+    - "MODERATE"
+    - "HIGH"
+    - "CRITICAL"
+  min_evidence_strength: 0.50
+  require_multiple_signals: false
+  all_providers: false
+
+# ------------------------------------------------------------------------------
+# Priority Mapping
+# Direct mapping from Unified Risk Engine's risk_tier to operational CasePriority.
+# ------------------------------------------------------------------------------
+priority_mapping:
+  CRITICAL: "CRITICAL"
+  HIGH: "HIGH"
+  MODERATE: "MEDIUM"
+  LOW: "LOW"
+
+# ------------------------------------------------------------------------------
+# Case Lifecycle Status
+# Default initial status for newly constructed investigation cases.
+# ------------------------------------------------------------------------------
+status:
+  default: "NEW"
+
+# ------------------------------------------------------------------------------
+# Limits & Truncation Bounds
+# Enforces clean bound sizes on lists attached to cases.
+# ------------------------------------------------------------------------------
+limits:
+  max_claims_per_case: 100
+  max_alerts_per_case: 50
+  max_evidence_per_case: 200
+  max_network_relationships: 20
+  max_recommendations: 6
