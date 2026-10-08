@@ -113,7 +113,7 @@ describe('Checkpoint 5 — Case Dossier & Evidence Ledger (/cases/:id)', () => {
     await waitFor(() => {
       const overpayElements = screen.getAllByTestId('evidence-overpay');
       expect(overpayElements.length).toBeGreaterThan(0);
-      expect(overpayElements[0]).toHaveTextContent(/₹\d+/);
+      expect(overpayElements[0]).toHaveTextContent(/\$\d+/);
     });
   });
 

@@ -79,14 +79,14 @@ export interface QueueItem {
   readonly confidence: ConfidenceLevel;
   readonly est_dollars: number;
   readonly est_overpay: number;
-  readonly exposure_low: number;   // Sample INR low
-  readonly exposure_high: number;  // Sample INR high
+  readonly exposure_low: number;   // Sample USD low
+  readonly exposure_high: number;  // Sample USD high
   readonly effort_hours: number;   // e.g. 31, 9, 9, 14
   readonly pool: 'network' | 'general';
   readonly baseline_rank: number;  // e.g. 38 for #38 -> #1
   readonly slot?: 'addressable' | 'deferred';
   readonly top_reasons: readonly QueueReasonItem[];
-  readonly cost_of_delay_4w: number; // Sample INR cost of 4w delay
+  readonly cost_of_delay_4w: number; // Sample USD cost of 4w delay
   readonly members_affected: number;
   readonly rules_triggered: readonly string[];
   readonly primary_indicator: string;

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Case } from '@/types/case';
+import { formatCurrency } from '@/utils/currency';
 import { ConflictingSignals } from './ConflictingSignals';
 
 interface RiskSummaryProps {
@@ -66,10 +67,10 @@ export const RiskSummary: React.FC<RiskSummaryProps> = ({ caseItem }) => {
             Financial Exposure
           </span>
           <span className="font-mono text-2xl sm:text-3xl font-bold text-green-950 block leading-none">
-            ₹{caseItem.est_dollars.toLocaleString('en-IN')}
+            {formatCurrency(caseItem.est_dollars, 'full')}
           </span>
           <span className="text-xs text-brick font-mono font-semibold block pt-1">
-            ₹{caseItem.est_overpay.toLocaleString('en-IN')} direct overpayment
+            {formatCurrency(caseItem.est_overpay, 'full')} direct overpayment
           </span>
           <span className="text-[11px] text-ink-muted block font-sans">
             Calculated across {caseItem.claim_count} analyzed claims
@@ -108,13 +109,13 @@ export const RiskSummary: React.FC<RiskSummaryProps> = ({ caseItem }) => {
               <tr>
                 <td className="py-2 text-ink-muted">Estimated Total Financial Exposure</td>
                 <td className="py-2 text-right font-mono font-bold text-green-950">
-                  ₹{caseItem.est_dollars.toLocaleString('en-IN')}
+                  {formatCurrency(caseItem.est_dollars, 'full')}
                 </td>
               </tr>
               <tr>
                 <td className="py-2 text-ink-muted">Identifiable Line-Item Overpayment</td>
                 <td className="py-2 text-right font-mono font-bold text-brick">
-                  ₹{caseItem.est_overpay.toLocaleString('en-IN')}
+                  {formatCurrency(caseItem.est_overpay, 'full')}
                 </td>
               </tr>
               <tr>

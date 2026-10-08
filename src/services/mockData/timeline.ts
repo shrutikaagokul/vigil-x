@@ -37,7 +37,7 @@ export const MOCK_TIMELINE_EVENTS: readonly TimelineEvent[] = [
     timestamp: '2024-09-12T12:00:00Z',
     service_date: '2024-09-12',
     event_type: 'claim_burst',
-    description: 'High-complexity definitive toxicology panel (G0483, ₹820.00) billed by BioMatrix Labs (P0046).',
+    description: 'High-complexity definitive toxicology panel (G0483, $820.00) billed by BioMatrix Labs (P0046).',
     severity: 'CRITICAL',
     claim_ids: ['C1025'],
     provider_ids: ['P0042', 'P0046'],

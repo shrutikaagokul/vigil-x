@@ -55,7 +55,7 @@ export const ClaimTraceDetail: React.FC<ClaimTraceDetailProps> = ({ claimId, onC
             <div className="bg-surface p-2 border border-hairline">
               <span className="text-[10px] font-mono text-ink-subtle block">Paid / Billed</span>
               <span className="font-mono font-bold text-ink">
-                ₹{claim.paid_amount.toFixed(2)} <span className="text-ink-subtle font-normal">/ ₹{claim.billed_amount.toFixed(2)}</span>
+                ${claim.paid_amount.toFixed(2)} <span className="text-ink-subtle font-normal">/ ${claim.billed_amount.toFixed(2)}</span>
               </span>
             </div>
             <div className="bg-surface p-2 border border-hairline">

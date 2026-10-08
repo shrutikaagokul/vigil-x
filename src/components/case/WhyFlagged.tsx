@@ -1,6 +1,7 @@
 import React from 'react';
 import { Case } from '@/types/case';
 import { Evidence } from '@/types/alert';
+import { formatCurrency } from '@/utils/currency';
 
 interface WhyFlaggedProps {
   readonly caseItem: Case;
@@ -67,7 +68,7 @@ export const WhyFlagged: React.FC<WhyFlaggedProps> = ({
             <>
               <span className="text-border-strong">·</span>
               <span>
-                Identifiable Overpayment: <strong className="font-mono text-brick">₹{caseItem.est_overpay.toLocaleString('en-IN')}</strong>
+                Identifiable Overpayment: <strong className="font-mono text-brick">{formatCurrency(caseItem.est_overpay, 'full')}</strong>
               </span>
             </>
           )}
@@ -143,7 +144,7 @@ export const WhyFlagged: React.FC<WhyFlaggedProps> = ({
                       data-testid="evidence-overpay"
                       className="font-bold text-brick text-sm tabular-nums"
                     >
-                      ₹{ev.est_overpay.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      {formatCurrency(ev.est_overpay, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </strong>
                   </div>
                 )}

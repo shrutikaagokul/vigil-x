@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Case } from '@/types/case';
+import { formatCurrency } from '@/utils/currency';
 
 interface CaseHeaderProps {
   readonly caseItem: Case;
@@ -123,11 +124,11 @@ export const CaseHeader: React.FC<CaseHeaderProps> = ({ caseItem }) => {
               Total Exposure
             </span>
             <span className="font-mono text-lg sm:text-xl font-bold text-green-950 block mt-0.5">
-              ₹{caseItem.est_dollars.toLocaleString('en-IN')}
+              {formatCurrency(caseItem.est_dollars, 'full')}
             </span>
             {caseItem.est_overpay > 0 && (
               <span className="text-xs text-brick font-mono font-semibold">
-                ₹{caseItem.est_overpay.toLocaleString('en-IN')} overpayment
+                {formatCurrency(caseItem.est_overpay, 'full')} overpayment
               </span>
             )}
           </div>

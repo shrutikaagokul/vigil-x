@@ -39,7 +39,7 @@ export const MOCK_SUMMARY: DashboardSummary = {
   metrics: [
     {
       label: 'Financial Exposure',
-      value: '₹932,000',
+      value: '$932,000',
       delta: '+14.2%',
       trend: 'up',
       subtitle: 'Trailing 90-day window',
@@ -60,7 +60,7 @@ export const MOCK_SUMMARY: DashboardSummary = {
     },
     {
       label: 'Recoverable Overpay Estimate',
-      value: '₹255,096',
+      value: '$255,096',
       delta: '+8.6%',
       trend: 'up',
       subtitle: 'Direct line-item overpayment',
