@@ -1,101 +1,81 @@
-"""
-Tests for Alert and Evidence data contracts.
-
-Verifies:
-  1. Alert creation, field presence, and types
-  2. Evidence serialization and deserialization
-  3. Severity enum ordering (LOW < MEDIUM < HIGH < CRITICAL)
-  4. make_id and make_evidence_id uniqueness and formatting
-  5. JSON schema compliance for serialization
-"""
-
-import json
+"""Tests for the shared Alert/Evidence contract."""
 import pytest
+from contracts.alert import Alert, Evidence, Severity
 
-from vigilx.models.alert import Alert, Evidence, Severity, make_evidence_id
+
+def test_alert_creation():
+    ev = Evidence(
+        evidence_id="E-R06-001", rule_id="R06", rule_version="1.0.0",
+        claim_ids=["C001"], fields_matched=["service_minutes"],
+        plain_text="Test evidence", est_overpay=0, severity="HIGH",
+    )
+    alert = Alert(
+        alert_id="A-R06-001", rule_id="R06", rule_version="1.0.0",
+        entity_type="provider", entity_id="P001",
+        claim_ids=["C001"], severity="HIGH",
+        est_dollars=0, evidence=[ev],
+    )
+    assert alert.rule_id == "R06"
+    assert len(alert.evidence) == 1
 
 
-class TestAlertContract:
+def test_alert_validation_pass():
+    ev = Evidence(
+        evidence_id="E-R06-001", rule_id="R06", rule_version="1.0.0",
+        claim_ids=["C001"], fields_matched=["field1"],
+        plain_text="Valid evidence",
+    )
+    alert = Alert(
+        alert_id="A-R06-001", rule_id="R06", rule_version="1.0.0",
+        entity_type="provider", entity_id="P001",
+        claim_ids=["C001"], severity="HIGH",
+        est_dollars=0, evidence=[ev],
+    )
+    errors = alert.validate()
+    assert errors == []
 
-    def test_severity_ordering(self):
-        """Severity levels follow strict ascending severity."""
-        assert Severity.LOW < Severity.MEDIUM
-        assert Severity.MEDIUM < Severity.HIGH
-        assert Severity.HIGH < Severity.CRITICAL
 
-        assert Severity.CRITICAL > Severity.HIGH
-        assert Severity.HIGH >= Severity.HIGH
-        assert Severity.LOW <= Severity.MEDIUM
+def test_alert_validation_fail():
+    alert = Alert(
+        alert_id="", rule_id="", rule_version="1.0.0",
+        entity_type="", entity_id="",
+        claim_ids=[], severity="INVALID",
+        est_dollars=0, evidence=[],
+    )
+    errors = alert.validate()
+    assert len(errors) >= 4  # missing id, rule, entity_type, entity_id, evidence, severity
 
-    def test_evidence_to_dict(self):
-        """Evidence converts cleanly to dict suitable for JSON serialization."""
-        ev = Evidence(
-            evidence_id="E-R01-abc12345",
-            rule_id="R01",
-            rule_version="1.0",
-            claim_ids=["C1", "C2"],
-            fields_matched=["cpt_code", "service_from"],
-            plain_text="Duplicate claims detected.",
-            est_overpay=120.50,
-            severity=Severity.HIGH,
-            fp_notes=["Check for modifier 76."],
-        )
 
-        d = ev.to_dict()
-        assert d["evidence_id"] == "E-R01-abc12345"
-        assert d["rule_id"] == "R01"
-        assert d["severity"] == "HIGH"
-        assert d["est_overpay"] == 120.50
-        assert d["claim_ids"] == ["C1", "C2"]
-        assert d["fields_matched"] == ["cpt_code", "service_from"]
+def test_alert_to_dict():
+    ev = Evidence(
+        evidence_id="E-R06-001", rule_id="R06", rule_version="1.0.0",
+        claim_ids=["C001"], fields_matched=["field1"],
+        plain_text="Test",
+    )
+    alert = Alert(
+        alert_id="A-R06-001", rule_id="R06", rule_version="1.0.0",
+        entity_type="provider", entity_id="P001",
+        claim_ids=["C001"], severity="HIGH",
+        est_dollars=0, evidence=[ev],
+    )
+    d = alert.to_dict()
+    assert d["rule_id"] == "R06"
+    assert len(d["evidence"]) == 1
+    assert d["evidence"][0]["plain_text"] == "Test"
 
-        # Ensure json serializable
-        json_str = json.dumps(d)
-        assert "Duplicate claims detected." in json_str
 
-    def test_alert_to_dict(self):
-        """Alert with nested evidence converts cleanly to dict."""
-        ev = Evidence(
-            evidence_id=make_evidence_id("R02"),
-            rule_id="R02",
-            rule_version="1.0",
-            claim_ids=["C10"],
-            fields_matched=["em_level"],
-            plain_text="High coding.",
-            est_overpay=50.0,
-            severity=Severity.HIGH,
-        )
+def test_severity_enum():
+    assert Severity.LOW.value == "LOW"
+    assert Severity.MEDIUM.value == "MEDIUM"
+    assert Severity.HIGH.value == "HIGH"
+    assert Severity.CRITICAL.value == "CRITICAL"
 
-        alert_id = Alert.make_id()
-        assert alert_id.startswith("A-")
 
-        alert = Alert(
-            alert_id=alert_id,
-            rule_id="R02",
-            rule_version="1.0",
-            entity_type="provider",
-            entity_id="PRV_99",
-            claim_ids=["C10"],
-            severity=Severity.HIGH,
-            est_dollars=50.0,
-            evidence=[ev],
-            fp_notes=["Specialist practice."],
-        )
+def test_evidence_generate_id():
+    eid = Evidence.generate_id("R06")
+    assert eid.startswith("E-R06-")
 
-        d = alert.to_dict()
-        assert d["alert_id"] == alert_id
-        assert d["entity_id"] == "PRV_99"
-        assert d["severity"] == "HIGH"
-        assert len(d["evidence"]) == 1
-        assert d["evidence"][0]["evidence_id"] == ev.evidence_id
 
-        # Roundtrip JSON string
-        json_str = json.dumps(d)
-        decoded = json.loads(json_str)
-        assert decoded["alert_id"] == alert_id
-        assert decoded["evidence"][0]["severity"] == "HIGH"
-
-    def test_make_evidence_id_prefix(self):
-        """make_evidence_id prefixes with the rule_id."""
-        eid = make_evidence_id("R03")
-        assert eid.startswith("E-R03-")
+def test_alert_generate_id():
+    aid = Alert.generate_id("R07")
+    assert aid.startswith("A-R07-")

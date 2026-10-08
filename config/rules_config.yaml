@@ -1,95 +1,82 @@
-# ─────────────────────────────────────────────
-# Vigil-X  —  Rules Configuration
-# ─────────────────────────────────────────────
-# All rule thresholds are defined here.
-# Do NOT hard-code magic numbers in rule files.
-# ─────────────────────────────────────────────
+# ============================================================
+# Vigil-X — Rule Configuration
+# All thresholds are configurable. No magic numbers in code.
+# ============================================================
 
-rules:
+# --- R06: Impossible Timing ---
+R06:
+  enabled: true
+  version: "1.0.0"
+  # A: Provider service-day overload
+  provider_daily_max_minutes: 960       # 16 hours
+  # B: Impossible travel
+  travel_speed_threshold_mph: 60        # required speed to flag
+  # C: Member overlap - minimum gap (minutes) to tolerate
+  member_overlap_tolerance_minutes: 0
+  # Place-of-service codes considered telehealth (excluded from travel/overlap)
+  telehealth_pos_codes: ["02", "10"]
+  severity: "HIGH"
 
-  # ── R01: Duplicate Billing ────────────────
-  R01:
-    enabled: true
-    version: "1.0"
-    severity_exact: HIGH
-    severity_near: MEDIUM
-    near_dup_day_window: 1          # +/- days for near-duplicate matching
-    # Modifiers that indicate legitimate separate services
-    legitimate_modifiers:
-      - "LT"
-      - "RT"
-      - "50"
-      - "76"
-      - "77"
-    # Claim statuses that indicate correction/void (not fraud)
-    void_statuses:
-      - "voided"
-      - "void"
-      - "reversed"
-    corrected_statuses:
-      - "corrected"
-      - "adjusted"
-      - "replacement"
+# --- R07: Referral Anomaly ---
+R07:
+  enabled: true
+  version: "1.0.0"
+  # A: Referral concentration
+  concentration_threshold: 0.70         # >70% to one target
+  min_referral_count: 20                # minimum referrals to evaluate
+  # B: Reciprocal loop
+  reciprocal_min_referrals: 15          # each direction >= 15
+  # C: Same-day high-cost lab (flag if referral + lab on same day)
+  high_cost_lab_specialties: ["laboratory", "clinical_lab", "pathology"]
+  # D: Referral spike
+  referral_zscore_threshold: 3.0
+  referral_spike_trailing_days: 90
+  severity: "MEDIUM"
 
-  # ── R02: Upcoding ────────────────────────
-  R02:
-    enabled: true
-    version: "1.0"
-    min_em_claims: 50               # Minimum E/M claims for provider evaluation
-    mad_z_threshold: 3.0            # MAD-based z-score threshold
-    share_multiplier: 2.0           # Level 4-5 share must exceed peer_median × this
-    # Claim-level supporting evidence thresholds
-    claim_level:
-      low_complexity_max: 1         # dx_complexity <= this on level 5 = suspect
-      duration_percentile: 25       # Service duration below peer p25 = suspect
+# --- R08: Geographic Anomaly ---
+R08:
+  enabled: true
+  version: "1.0.0"
+  # A: Member-provider distance
+  routine_care_distance_miles: 75       # flag if > 75 mi without referral
+  use_specialty_p99: true               # use specialty-specific p99 when available
+  # B: Multi-county provider
+  county_threshold: 5                   # flag if serves >= 5 counties
+  # C: Facility location type flags
+  suspicious_facility_types: ["residential", "virtual_office", "po_box"]
+  severity_distance: "MEDIUM"
+  severity_county: "LOW"
+  severity_facility: "MEDIUM"
 
-  # ── R03: Unbundling ──────────────────────
-  R03:
-    enabled: true
-    version: "1.0"
-    base_severity: MEDIUM
-    escalated_severity: HIGH
-    # Modifiers that legitimately override bundling rules
-    allowed_override_modifiers:
-      - "59"
-      - "25"
-      - "XE"
-    provider_rate_percentile: 95    # Escalate if provider rate exceeds peer p95
+# --- R09: Shared Identity Link ---
+R09:
+  enabled: true
+  version: "1.0.0"
+  # Fuzzy matching
+  fuzzy_threshold: 88                   # rapidfuzz token_set_ratio threshold
+  # Identity link weights (for graph edge weighting)
+  link_weights:
+    bank_hash: 1.0
+    tin_hash: 1.0
+    owner_exact: 0.9
+    owner_fuzzy: 0.7
+    address_suite: 0.6
+    address_no_suite: 0.4
+    registered_agent: 0.8
+  # Legitimate group discount
+  documented_group_discount: 0.5
+  severity: "MEDIUM"
 
-  # ── R04: Phantom Services ────────────────
-  R04:
-    enabled: true
-    version: "1.0"
-    severity_deceased: CRITICAL
-    severity_terminated: CRITICAL
-    severity_inpatient_overlap: HIGH
-    severity_closed_facility: HIGH
-    severity_non_operating_day: HIGH
-    severity_orphan_ambulance: MEDIUM
-    severity_ghost_member: LOW
-    ghost_member:
-      lookback_months: 12           # No claims in previous N months
-      min_same_provider_claims: 5   # >= N claims with same provider
-    ambulance_related_window_days: 1  # ER/facility claim within N days
+# --- R10: Burst / Spike ---
+R10:
+  enabled: true
+  version: "1.0.0"
+  spike_multiplier: 3.0                 # current week > 3x trailing median
+  dollar_floor: 5000                    # minimum weekly amount to alert
+  trailing_weeks: 12                    # trailing window for median
+  min_history_weeks: 4                  # minimum history before alerting
+  severity: "MEDIUM"
 
-  # ── R05: Excessive Utilization ───────────
-  R05:
-    enabled: true
-    version: "1.0"
-    base_severity: MEDIUM
-    escalated_severity: HIGH
-    provider_peer_multiplier: 3.0   # Provider mean visits > peer_median × this
-    # Per code-group utilization caps (max per 30-day rolling window)
-    utilization_caps:
-      PT:
-        max_per_30d: 12
-        code_prefixes: ["97110", "97140", "97530", "97112", "97116"]
-      DME_resupply:
-        max_per_30d: 1
-        code_prefixes: ["A4253", "A4259", "A7003", "A7004"]
-      lab_panels:
-        max_per_30d: 4
-        code_prefixes: ["80050", "80053", "80061", "80076"]
-      imaging:
-        max_per_30d: 3
-        code_prefixes: ["70553", "72148", "73721", "74177"]
+# --- Global settings ---
+global:
+  evidence_version: "1.0.0"

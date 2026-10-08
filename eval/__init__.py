@@ -1,1 +1,1 @@
-"""Eval package."""
+"""Evaluation modules for Vigil-X."""
