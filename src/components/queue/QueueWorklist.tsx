@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { QueueItem } from '@/types/queue';
-import { formatExposureRange, formatINR } from '@/utils/currency';
+import { formatExposureRange, formatCurrency } from '@/utils/currency';
 
 interface QueueWorklistProps {
   readonly items: readonly QueueItem[];
@@ -122,7 +122,7 @@ export const QueueWorklist: React.FC<QueueWorklistProps> = ({
                         </span>
                         {isDeferred ? (
                           <span className="text-[0.9375rem] text-[#9E3626] font-normal leading-normal mt-0.5">
-                            Waiting 4 weeks puts about {formatINR(item.cost_of_delay_4w, 'compact')} more at risk
+                            Waiting 4 weeks puts about {formatCurrency(item.cost_of_delay_4w, 'compact')} more at risk
                           </span>
                         ) : (
                           <span className="text-[0.9375rem] text-[#4F5F55] font-normal leading-normal mt-0.5">

@@ -13,30 +13,33 @@ export const WhyFlagged: React.FC<WhyFlaggedProps> = ({
   caseItem,
   evidenceList,
   onSelectEvidence,
-  onSelectClaim,
 }) => {
-  // Select the strongest evidence per distinct detection rule to provide 3-4 comprehensive reasons
+  // Select up to 4 distinct strongest evidence reasons
   const ruleMap = new Map<string, Evidence>();
   evidenceList.forEach((ev) => {
     if (!ruleMap.has(ev.rule_id)) {
       ruleMap.set(ev.rule_id, ev);
     }
   });
-  const topReasons = Array.from(ruleMap.values()).slice(0, 4);
+
+  let topReasons = Array.from(ruleMap.values()).slice(0, 4);
+  if (topReasons.length === 0 && evidenceList.length > 0) {
+    topReasons = evidenceList.slice(0, 4);
+  }
 
   return (
     <section className="bg-surface border border-border p-5 sm:p-6 space-y-5">
-      {/* Chapter 01 Section Header */}
+      {/* Section Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border pb-3">
         <div>
-          <span className="text-[11px] font-mono text-ink-subtle uppercase tracking-wider block">
-            Primary Investigation View · Chapter 01
-          </span>
           <h2 className="font-serif text-lg sm:text-xl font-bold text-green-950">
             Why this case was prioritized
           </h2>
+          <p className="text-sm text-ink-muted mt-0.5">
+            Key behavioral signals and correlated evidence driving the investigation priority.
+          </p>
         </div>
-        <div className="flex items-center gap-2 font-mono text-xs">
+        <div className="flex items-center gap-2 font-mono text-xs shrink-0">
           <span className="px-2 py-0.5 bg-paper-subtle border border-border text-ink">
             {caseItem.confidence} Confidence
           </span>
@@ -46,16 +49,13 @@ export const WhyFlagged: React.FC<WhyFlaggedProps> = ({
         </div>
       </div>
 
-      {/* Primary Indicator Context Banner */}
+      {/* Primary Prioritization Summary */}
       <div className="p-4 bg-paper-subtle border border-border space-y-2">
-        <span className="text-[11px] font-mono font-bold text-green-950 uppercase tracking-wider block">
-          Primary Prioritization Rationale
-        </span>
         <p className="text-sm sm:text-base text-ink leading-relaxed font-sans font-normal">
           {caseItem.primary_indicator}. Multi-dimensional analytics engines identified concurrent behavioral anomalies across the focal provider and affiliated network entities, indicating non-standard billing velocity, reciprocal referral clustering, and shared corporate identities.
         </p>
 
-        <div className="pt-2 border-t border-border flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-ink-muted">
+        <div className="pt-2 border-t border-border flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-ink-muted font-sans">
           <span>
             Triggered Rules: <strong className="font-mono text-green-950">{caseItem.rules_triggered.join(' · ')}</strong>
           </span>
@@ -63,27 +63,36 @@ export const WhyFlagged: React.FC<WhyFlaggedProps> = ({
           <span>
             Analyzed Claims: <strong className="font-mono text-ink">{caseItem.claim_count}</strong>
           </span>
-          <span className="text-border-strong">·</span>
-          <span>
-            Identifiable Overpayment: <strong className="font-mono text-brick">${caseItem.est_overpay.toLocaleString()}</strong>
-          </span>
+          {caseItem.est_overpay > 0 && (
+            <>
+              <span className="text-border-strong">·</span>
+              <span>
+                Identifiable Overpayment: <strong className="font-mono text-brick">${caseItem.est_overpay.toLocaleString()}</strong>
+              </span>
+            </>
+          )}
         </div>
       </div>
 
-      {/* 3-4 Strongest Evidentiary Reasons */}
+      {/* 4 Concise Prioritized Reasons */}
       <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h3 className="text-xs font-mono uppercase font-bold text-green-950 tracking-wider">
-            Key Supporting Evidence ({topReasons.length} Primary Signals)
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+          <h3 className="text-sm font-semibold text-green-950">
+            Key Prioritized Reasons ({topReasons.length} Primary Signals)
           </h3>
           <span className="text-xs text-ink-subtle font-sans">
-            Click any evidence chip to focus in Evidence Ledger
+            Click an evidence chip to inspect full audit ledger in Evidence
           </span>
         </div>
 
-        <div className="space-y-3">
-          {topReasons.map((ev) => {
-            const severityClass = {
+        <div className="border border-border divide-y divide-border bg-surface">
+          {topReasons.length === 0 ? (
+            <div className="p-4 text-center text-sm text-ink-muted bg-paper-subtle">
+              No distinct evidence signals flagged for this case.
+            </div>
+          ) : (
+            topReasons.map((ev) => {
+              const severityClass = {
               CRITICAL: 'bg-critical-soft text-critical border-critical/30',
               HIGH: 'bg-brick-soft text-brick border-brick/30',
               MEDIUM: 'bg-brass-soft text-ink border-brass/40',
@@ -91,19 +100,19 @@ export const WhyFlagged: React.FC<WhyFlaggedProps> = ({
             }[ev.severity] || 'bg-paper-subtle text-ink';
 
             return (
-              <article
+              <div
                 key={ev.evidence_id}
-                className="p-4 bg-surface border border-border space-y-2.5 hover:bg-paper-subtle/40 transition-colors"
+                className="p-3.5 sm:p-4 flex flex-col md:flex-row md:items-center justify-between gap-3 hover:bg-paper-subtle/40 transition-colors"
               >
-                {/* Evidence Item Header */}
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div className="flex flex-wrap items-center gap-2">
+                {/* Left: Metadata chips & One-line explanation */}
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3 flex-1 min-w-0">
+                  <div className="flex items-center gap-2 shrink-0">
                     {/* Clickable Evidence ID Chip */}
                     <button
                       type="button"
                       data-testid="evidence-id-chip"
                       onClick={() => onSelectEvidence?.(ev.evidence_id)}
-                      title="Click to view in Evidence Ledger"
+                      title="Click to view in Evidence chapter"
                       className="font-mono text-xs font-bold text-green-950 bg-paper border border-border px-2 py-0.5 hover:bg-green-100 hover:border-green-300 transition-colors cursor-pointer"
                     >
                       {ev.evidence_id}
@@ -120,68 +129,27 @@ export const WhyFlagged: React.FC<WhyFlaggedProps> = ({
                     </span>
                   </div>
 
-                  {/* Overpayment Value */}
-                  <div className="flex items-baseline gap-1.5 font-mono text-xs">
-                    <span className="text-[11px] text-ink-subtle uppercase">Est. Overpayment:</span>
+                  {/* One-Line Explanation */}
+                  <p className="text-sm text-ink leading-snug font-normal line-clamp-2 md:line-clamp-1">
+                    {ev.plain_text}
+                  </p>
+                </div>
+
+                {/* Right: Financial Figure (only if available) */}
+                {ev.est_overpay > 0 && (
+                  <div className="shrink-0 flex items-baseline gap-1.5 font-mono text-xs self-start md:self-center">
+                    <span className="text-[11px] text-ink-subtle uppercase">Overpayment:</span>
                     <strong
                       data-testid="evidence-overpay"
-                      className="font-bold text-brick text-sm"
+                      className="font-bold text-brick text-sm tabular-nums"
                     >
                       ${ev.est_overpay.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </strong>
                   </div>
-                </div>
-
-                {/* Plain-Text Finding Explanation */}
-                <p className="text-sm text-ink leading-relaxed font-normal">
-                  {ev.plain_text}
-                </p>
-
-                {/* Matched Fields & Associated Claims */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2 border-t border-border text-xs">
-                  <div className="flex flex-wrap items-center gap-1.5">
-                    <span className="text-[11px] font-mono text-ink-subtle uppercase">Matched:</span>
-                    {ev.fields_matched.map((f) => (
-                      <span
-                        key={f}
-                        className="px-1.5 py-0.5 text-[11px] font-mono bg-paper border border-border text-ink-muted"
-                      >
-                        {f}
-                      </span>
-                    ))}
-                  </div>
-
-                  <div className="flex flex-wrap items-center gap-1.5">
-                    <span className="text-[11px] font-mono text-ink-subtle uppercase">Claims:</span>
-                    {ev.claim_ids.map((cid) => (
-                      <button
-                        key={cid}
-                        type="button"
-                        onClick={() => onSelectClaim?.(cid)}
-                        title={`Inspect claim ${cid}`}
-                        className="px-2 py-0.5 text-[11px] font-mono bg-green-50 hover:bg-green-100 text-green-900 border border-green-300 font-semibold"
-                      >
-                        {cid} →
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* False Positive Context Notes if present */}
-                {ev.fp_notes && (
-                  <div
-                    data-testid="fp-notes-box"
-                    className="p-2.5 bg-paper border border-border text-xs text-ink-muted space-y-1"
-                  >
-                    <strong className="font-mono text-[11px] text-green-950 uppercase block">
-                      False-Positive Context:
-                    </strong>
-                    <p className="leading-relaxed">{ev.fp_notes}</p>
-                  </div>
                 )}
-              </article>
+              </div>
             );
-          })}
+          }))}
         </div>
       </div>
     </section>

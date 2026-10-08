@@ -3,17 +3,17 @@ import React from 'react';
 export const CopilotPlaceholder: React.FC = () => {
   return (
     <section className="bg-surface border border-border p-5 sm:p-6 space-y-6">
-      {/* Chapter Header */}
+      {/* Section Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border pb-3">
         <div>
-          <span className="text-[11px] font-mono text-ink-subtle uppercase tracking-wider block">
-            SIU Work Product · Chapter 06
-          </span>
           <h2 className="font-serif text-lg sm:text-xl font-bold text-green-950">
             AI Copilot &amp; Executive Brief
           </h2>
+          <p className="text-sm text-ink-muted mt-0.5 font-sans">
+            Grounded investigation summary and deterministic work product draft.
+          </p>
         </div>
-        <div className="flex items-center gap-2 font-mono text-xs">
+        <div className="flex items-center gap-2 font-mono text-xs shrink-0">
           <span className="px-2.5 py-1 bg-green-100 text-green-900 border border-green-300 font-semibold flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-green-700" aria-hidden="true" />
             Verified Grounding

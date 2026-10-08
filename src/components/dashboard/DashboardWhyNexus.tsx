@@ -21,7 +21,7 @@ export const DashboardWhyNexus: React.FC = () => {
           <strong className="text-[#1B3A29] font-semibold block text-[0.9375rem]">
             1. Capacity-Aware Prioritization
           </strong>
-          <p className="text-[#4F5F55] text-[0.8125rem] leading-relaxed">
+          <p className="text-[#4F5F55] text-sm leading-relaxed">
             High-complexity multi-provider networks (e.g. 31h effort) are dynamically prioritized when specialist hours are budgeted, preventing unworked alerts from expiring.
           </p>
         </div>
@@ -31,7 +31,7 @@ export const DashboardWhyNexus: React.FC = () => {
           <strong className="text-[#1B3A29] font-semibold block text-[0.9375rem]">
             2. Network Context & Entity Resolution
           </strong>
-          <p className="text-[#4F5F55] text-[0.8125rem] leading-relaxed">
+          <p className="text-[#4F5F55] text-sm leading-relaxed">
             Shared banking hash (<code>9a8b7c6d5e4f3a21</code>) and parent ownership link 6 providers together, promoting ring coordinators over isolated single-provider rule flags.
           </p>
         </div>
@@ -41,7 +41,7 @@ export const DashboardWhyNexus: React.FC = () => {
           <strong className="text-[#1B3A29] font-semibold block text-[0.9375rem]">
             3. Multi-Rule Evidence Cross-Corroboration
           </strong>
-          <p className="text-[#4F5F55] text-[0.8125rem] leading-relaxed">
+          <p className="text-[#4F5F55] text-sm leading-relaxed">
             Corroborates 5 concurrent indicators (timing velocity, referral loops, same-day lab surges, banking rings, and burst billing) into a single unified dossier.
           </p>
         </div>
@@ -51,7 +51,7 @@ export const DashboardWhyNexus: React.FC = () => {
           <strong className="text-[#1B3A29] font-semibold block text-[0.9375rem]">
             4. Exposure Yield per Investigation Hour
           </strong>
-          <p className="text-[#4F5F55] text-[0.8125rem] leading-relaxed">
+          <p className="text-[#4F5F55] text-sm leading-relaxed">
             Sequences investigations to maximize identifiable overpayment exposure per investigator hour within available generalist and specialist capacity.
           </p>
         </div>

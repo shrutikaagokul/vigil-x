@@ -9,18 +9,18 @@ interface RiskSummaryProps {
 export const RiskSummary: React.FC<RiskSummaryProps> = ({ caseItem }) => {
   return (
     <section className="bg-surface border border-border p-5 sm:p-6 space-y-6">
-      {/* Chapter Header */}
+      {/* Section Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border pb-3">
         <div>
-          <span className="text-[11px] font-mono text-ink-subtle uppercase tracking-wider block">
-            Risk &amp; Uncertainty Modeling · Chapter 04
-          </span>
           <h2 className="font-serif text-lg sm:text-xl font-bold text-green-950">
             Risk Score Decomposition
           </h2>
+          <p className="text-sm text-ink-muted mt-0.5 font-sans">
+            Multi-signal scoring components, financial exposure breakdown, and model confidence.
+          </p>
         </div>
-        <div className="flex items-center gap-2 font-mono text-xs">
-          <span className="text-ink-subtle uppercase">Confidence Level:</span>
+        <div className="flex items-center gap-2 font-mono text-xs shrink-0">
+          <span className="text-ink-subtle uppercase text-[11px]">Confidence Level:</span>
           <strong className="text-green-900 font-bold bg-paper-subtle border border-border px-2 py-0.5">
             {caseItem.confidence}
           </strong>

@@ -99,33 +99,28 @@ export const QueuePage: React.FC = () => {
 
     filteredItems.forEach((item) => {
       riskSum += item.exposure_high || item.est_dollars || 0;
+      const effort = item.effort_hours || (item.pool === 'network' ? 20 : 8);
 
-      let fits = false;
-      const effort = item.effort_hours || 10;
       if (item.pool === 'network') {
-        if (accNet + effort <= networkHours || accNet + accGen + effort <= totalCapacity) {
-          fits = true;
+        if (accNet + effort <= networkHours) {
+          fit++;
           accNet += effort;
         }
       } else {
-        if (accGen + effort <= generalHours || accNet + accGen + effort <= totalCapacity) {
-          fits = true;
+        if (accGen + effort <= generalHours) {
+          fit++;
           accGen += effort;
         }
       }
-
-      if (fits) {
-        fit++;
-      }
     });
 
-    const used = Math.min(totalCapacity, accGen + accNet);
+    const used = accGen + accNet;
     return {
       addressableCount: Math.max(1, fit),
-      usedHours: used,
+      usedHours: used > 0 ? used : (filteredItems[0]?.effort_hours || 10),
       totalAtRisk: riskSum,
     };
-  }, [filteredItems, generalHours, networkHours, totalCapacity]);
+  }, [filteredItems, generalHours, networkHours]);
 
   // Synchronize selection: select first item by default or if selection became invalid
   useEffect(() => {

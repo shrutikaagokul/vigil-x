@@ -14,6 +14,14 @@ export const EvidenceRow: React.FC<EvidenceRowProps> = ({
   onSelect,
   onSelectClaim,
 }) => {
+  const rowRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    if (isSelected && rowRef.current && typeof rowRef.current.scrollIntoView === 'function') {
+      rowRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }, [isSelected]);
+
   const severityClass = {
     CRITICAL: 'bg-critical-soft text-critical border-critical/30',
     HIGH: 'bg-brick-soft text-brick border-brick/30',
@@ -28,6 +36,9 @@ export const EvidenceRow: React.FC<EvidenceRowProps> = ({
 
   return (
     <div
+      ref={rowRef}
+      data-testid="evidence-ledger-row"
+      data-evidence-id={evidence.evidence_id}
       onClick={() => onSelect(evidence.evidence_id)}
       role="button"
       tabIndex={0}
