@@ -123,11 +123,11 @@ export const CaseHeader: React.FC<CaseHeaderProps> = ({ caseItem }) => {
               Total Exposure
             </span>
             <span className="font-mono text-lg sm:text-xl font-bold text-green-950 block mt-0.5">
-              ${caseItem.est_dollars.toLocaleString()}
+              ₹{caseItem.est_dollars.toLocaleString('en-IN')}
             </span>
             {caseItem.est_overpay > 0 && (
               <span className="text-xs text-brick font-mono font-semibold">
-                ${caseItem.est_overpay.toLocaleString()} overpayment
+                ₹{caseItem.est_overpay.toLocaleString('en-IN')} overpayment
               </span>
             )}
           </div>

@@ -87,7 +87,7 @@ export const EvidenceRow: React.FC<EvidenceRowProps> = ({
             data-testid="evidence-overpay"
             className="font-bold text-brick text-sm"
           >
-            ${evidence.est_overpay.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            ₹{evidence.est_overpay.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </span>
         </div>
       </div>

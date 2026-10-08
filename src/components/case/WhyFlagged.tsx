@@ -67,7 +67,7 @@ export const WhyFlagged: React.FC<WhyFlaggedProps> = ({
             <>
               <span className="text-border-strong">·</span>
               <span>
-                Identifiable Overpayment: <strong className="font-mono text-brick">${caseItem.est_overpay.toLocaleString()}</strong>
+                Identifiable Overpayment: <strong className="font-mono text-brick">₹{caseItem.est_overpay.toLocaleString('en-IN')}</strong>
               </span>
             </>
           )}
@@ -143,7 +143,7 @@ export const WhyFlagged: React.FC<WhyFlaggedProps> = ({
                       data-testid="evidence-overpay"
                       className="font-bold text-brick text-sm tabular-nums"
                     >
-                      ${ev.est_overpay.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      ₹{ev.est_overpay.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </strong>
                   </div>
                 )}
