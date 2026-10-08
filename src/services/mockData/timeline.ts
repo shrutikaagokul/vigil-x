@@ -1,0 +1,73 @@
+/**
+ * Mock Timeline fixtures for case progression.
+ */
+import { TimelineEvent } from '@/types/case';
+
+export const MOCK_TIMELINE_EVENTS: readonly TimelineEvent[] = [
+  // CASE-2024-0042 Timeline
+  {
+    event_id: 'EVT-0042-01',
+    case_id: 'CASE-2024-0042',
+    timestamp: '2024-09-12T09:45:00Z',
+    service_date: '2024-09-12',
+    event_type: 'service_overlap',
+    description: 'Dr. Mercer billed 75 min evaluation (99215) in Fulton Clinic; overlapping scheduling starts.',
+    severity: 'MEDIUM',
+    claim_ids: ['C1023'],
+    provider_ids: ['P0042'],
+    evidence_id: 'E-R06-TIMING-001',
+    metrics: { service_minutes: 75, claims_active: 1 },
+  },
+  {
+    event_id: 'EVT-0042-02',
+    case_id: 'CASE-2024-0042',
+    timestamp: '2024-09-12T10:15:00Z',
+    service_date: '2024-09-12',
+    event_type: 'reciprocal_referral',
+    description: 'Same member (M2001) referred directly to Dr. Vance (P0043) for physical therapy in adjacent suite.',
+    severity: 'HIGH',
+    claim_ids: ['C1024'],
+    provider_ids: ['P0042', 'P0043'],
+    evidence_id: 'E-R07-RECLOOP-003',
+    metrics: { referral_direction: 'P0042->P0043', same_day: true },
+  },
+  {
+    event_id: 'EVT-0042-03',
+    case_id: 'CASE-2024-0042',
+    timestamp: '2024-09-12T12:00:00Z',
+    service_date: '2024-09-12',
+    event_type: 'claim_burst',
+    description: 'High-complexity definitive toxicology panel (G0483, $820.00) billed by BioMatrix Labs (P0046).',
+    severity: 'CRITICAL',
+    claim_ids: ['C1025'],
+    provider_ids: ['P0042', 'P0046'],
+    evidence_id: 'E-R07-LABSAME-004',
+    metrics: { billed_amount: 1650.0, paid_amount: 820.0 },
+  },
+  {
+    event_id: 'EVT-0042-04',
+    case_id: 'CASE-2024-0042',
+    timestamp: '2024-09-12T15:00:00Z',
+    service_date: '2024-09-12',
+    event_type: 'travel_anomaly',
+    description: 'Dr. Mercer begins transforaminal epidural (64483) in Nelson County clinic (95.2 miles away, 45 min gap, 78.4 mph required).',
+    severity: 'CRITICAL',
+    claim_ids: ['C1026', 'C1027'],
+    provider_ids: ['P0042'],
+    evidence_id: 'E-R06-TRAVEL-002',
+    metrics: { calculated_speed_mph: 78.4, distance_miles: 95.2, time_delta_min: 45 },
+  },
+  {
+    event_id: 'EVT-0042-05',
+    case_id: 'CASE-2024-0042',
+    timestamp: '2024-09-14T15:30:00Z',
+    service_date: '2024-09-14',
+    event_type: 'identity_linked',
+    description: 'Entity resolution confirms exact shared bank account hash 9a8b7c6d5e4f3a21 across P0042, P0043, P0044, P0047.',
+    severity: 'CRITICAL',
+    claim_ids: ['C1023', 'C1024', 'C1028', 'C1030'],
+    provider_ids: ['P0042', 'P0043', 'P0044', 'P0047'],
+    evidence_id: 'E-R09-SHARDBK-006',
+    metrics: { connected_entities: 4, confidence_score: 1.0 },
+  },
+];

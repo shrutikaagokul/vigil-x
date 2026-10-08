@@ -1,0 +1,159 @@
+/* Font imports: Full package CSS (all subsets included) */
+@import '@fontsource/atkinson-hyperlegible-next/400.css';
+@import '@fontsource/atkinson-hyperlegible-next/500.css';
+@import '@fontsource/atkinson-hyperlegible-next/600.css';
+@import '@fontsource/atkinson-hyperlegible-next/700.css';
+@import '@fontsource/source-serif-4/600.css';
+@import '@fontsource/ibm-plex-mono/400.css';
+@import '@fontsource/ibm-plex-mono/500.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ==========================================================================
+   Design Tokens (CSS Custom Properties)
+   Source of truth for ClaimShield Nexus / Vigil-X visual system.
+   ========================================================================== */
+:root {
+  /* Green Spectrum */
+  --g950: #0B1A12;
+  --g900: #12291C;
+  --g800: #1B3A29;
+  --g700: #2A5A3F;
+  --g500: #4C8C5E;
+  --g300: #A9CFB0;
+  --g100: #E3EFE5;
+  --g50: #F3F8F4;
+
+  /* Severity & Accents */
+  --brass: #B38A2E;
+  --brick: #9E3626;
+  --crit: #701F14;
+
+  /* Typography & Lines */
+  --ink: #14201A;
+  --ink-2: #4F5F55;
+  --line: #D3E0D6;
+
+  /* Backwards-compatible aliases */
+  --color-paper: var(--g50);
+  --color-paper-subtle: var(--g100);
+  --color-surface: #ffffff;
+  --color-surface-raised: #f8fbf9;
+  --color-masthead: var(--g900);
+  --color-green-950: var(--g950);
+  --color-green-900: var(--g900);
+  --color-green-800: var(--g800);
+  --color-green-700: var(--g700);
+  --color-green-600: var(--g500);
+  --color-green-300: var(--g300);
+  --color-green-tint: var(--g100);
+  --color-text: var(--ink);
+  --color-text-muted: var(--ink-2);
+  --color-text-subtle: var(--ink-2);
+  --color-text-inverse: #ffffff;
+  --color-border: var(--line);
+  --color-border-strong: var(--g300);
+  --color-brass: var(--brass);
+  --color-brass-soft: #FAF4E6;
+  --color-brick: var(--brick);
+  --color-brick-soft: #FBF0EE;
+  --color-critical: var(--crit);
+  --color-critical-soft: #F9EBE9;
+  --color-steel: #8A969C;
+
+  /* Typography Stacks */
+  --font-sans: 'Atkinson Hyperlegible Next', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-serif: 'Source Serif 4', Georgia, Cambria, 'Times New Roman', Times, serif;
+  --font-mono: 'IBM Plex Mono', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+}
+
+/* Base Styles */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-family: var(--font-sans);
+  font-size: clamp(16px, 0.5vw + 9px, 19px);
+  background-color: var(--g50);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--g50);
+  color: var(--ink);
+  min-height: 100vh;
+  min-width: 1200px;
+  font-size: 1rem;
+  line-height: 1.45;
+}
+
+/* Interactive Elements & Focus States */
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border-radius: 3px;
+  transition: background-color 120ms ease, border-color 120ms ease;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+a:focus-visible,
+[role="row"]:focus-visible,
+[tabindex="0"]:focus-visible {
+  outline: 2px solid var(--g700);
+  outline-offset: 2px;
+}
+
+input, select, textarea {
+  font-family: inherit;
+  color: var(--ink);
+  background-color: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  padding: 6px 10px;
+}
+
+input:hover, select:hover, textarea:hover {
+  border-color: var(--g700);
+}
+
+a {
+  color: var(--g700);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* Tabular Numbers */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Technical Identifiers & Monospace */
+code, pre, kbd, samp {
+  font-family: var(--font-mono);
+}
+
+/* Reduced Motion Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
