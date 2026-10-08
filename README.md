@@ -1,159 +1,185 @@
-# Vigil-X: Claim & Utilization Intelligence Subsystem
+# Vigil-X: AI-Powered Healthcare Payer FWA Intelligence Platform
 
-Vigil-X is an AI-powered healthcare payer Fraud, Waste & Abuse (FWA) intelligence platform designed for Special Investigation Units (SIU). The system does **not** declare fraud; it identifies suspicious indicators, produces evidence-backed alerts, and prioritizes them for human investigation.
+Vigil-X (ClaimShield Nexus) is an AI-powered healthcare payer Fraud, Waste & Abuse (FWA) intelligence platform designed for Special Investigation Units (SIU).
 
-This subsystem provides the **Claim & Utilization Intelligence** foundation, implementing detection rules **R01 through R05**, shared feature engineering, and the common **Alert / Evidence data contract** for the entire platform.
+> [!IMPORTANT]
+> **Core Operating Philosophy:** The system does **not** declare fraud. It identifies suspicious indicators, produces evidence-backed alerts, aggregates signals into cases, and prioritizes them for human investigation. Every metric and statement presented to an investigator is traceable to underlying claim lines or rule activations.
 
 ---
 
-## Architecture Overview
+## 1. System Architecture
 
 ```
-vigil-x/
-├── src/
-│   └── vigilx/
-│       ├── __init__.py
-│       ├── models/                  # Shared Alert/Evidence contract (Platform Source of Truth)
-│       │   ├── __init__.py
-│       │   └── alert.py             # Alert, Evidence, Severity dataclasses
-│       ├── features/                # Shared vectorized feature engineering
-│       │   ├── __init__.py
-│       │   ├── claim_features.py    # Frequency, rolling 30d windows, E/M extraction
-│       │   ├── member_features.py   # Member utilization, ghost member heuristics
-│       │   ├── provider_features.py # E/M distributions, visit rates, unbundling rates
-│       │   └── peer_features.py     # Median Absolute Deviation (MAD) z-scores, peer stats
-│       ├── rules/                   # Detection rules
-│       │   ├── __init__.py
-│       │   ├── base.py              # BaseRule abstract class with config loader
-│       │   ├── r01_duplicate_billing.py       # R01: Exact & near-duplicates
-│       │   ├── r02_upcoding.py                # R02: E/M bell-curve & high-coding shifts
-│       │   ├── r03_unbundling.py              # R03: Comprehensive + component pairs
-│       │   ├── r04_phantom_services.py        # R04: Post-death, post-term, facility checks
-│       │   └── r05_excessive_utilization.py   # R05: Rolling 30d caps & visit frequency
-│       ├── runner.py                # RuleRunner & run_claim_utilization_rules API
-│       └── data_loader.py           # Synthetic data loader with date parsing
-├── config/
-│   └── rules_config.yaml            # Centralized threshold & policy configuration
-├── eval/
-│   ├── __init__.py
-│   └── evaluator.py                 # Precision/recall evaluation against ground truth
-├── tests/                           # 52 unit & integration tests (89% coverage)
-│   ├── test_alert_contract.py
-│   ├── test_data_loader.py
-│   ├── test_evaluator.py
-│   ├── test_features.py
-│   ├── test_r01_duplicate_billing.py
-│   ├── test_r02_upcoding.py
-│   ├── test_r03_unbundling.py
-│   ├── test_r04_phantom_services.py
-│   ├── test_r05_excessive_utilization.py
-│   └── test_rule_runner.py
-└── pyproject.toml
+        Detection outputs (R01–R10)
+        Network outputs (Louvain, Rings)
+        ML / Risk outputs (LightGBM, Anomaly, Queue)
+                    │
+                    ▼
+        Stable Analytical Contracts (`contracts/analytical.py`)
+                    │
+                    ▼
+         SQLite Database (`app.db`, 15 tables)
+                    │
+                    ▼
+          FastAPI Application (`/api/*`)
+          ┌─────────┴─────────┐
+          ▼                   ▼
+    Investigator API    Evidence Packet (Provenance-bounded facts)
+                              │
+                              ▼
+                        GenAI Narrator
+                              │
+                              ▼
+                      Deterministic Verifier
+                              │
+                              ▼
+                    Verified Investigation Brief
+                              │
+                              ▼
+                      Frontend Consumer
 ```
 
 ---
 
-## Detection Rules (R01 – R05)
+## 2. Workstream Status & Parallel Development Boundaries
 
-### R01 — Duplicate Billing
-- **Exact Duplicates (`HIGH`)**: Identifies claims with identical `member_id`, `billing_provider_id`, `cpt_code`, `service_from`, and `allowed_amount`.
-- **Near Duplicates (`MEDIUM`)**: Identifies claims with matching member, provider, CPT, and amount with service dates within $\pm 1$ day.
-- **Legitimate Exclusions**: Automatically suppresses claims containing anatomical or repeat procedure modifiers (`LT`, `RT`, `50`, `76`, `77`) and claims with voided/corrected status (`voided`, `adjusted`, `replacement`).
+This repository is developed by multiple engineers in parallel across distinct workstreams.
 
-### R02 — Upcoding Detection
-- **Provider E/M Distribution Shift (`HIGH`)**: Computes provider Level 4/5 Evaluation & Management (E/M) share and compares against peer specialty groups using robust Median Absolute Deviation (MAD) z-scores. Flags providers with `MAD z-score > 3.0` and `Level 4/5 share >= 2.0x peer median`.
-- **Claim-Level Evidence**: Attaches granular supporting evidence for Level-5 visits with low diagnostic complexity (`dx_complexity <= 1`) and abnormally short service durations below peer 25th percentile.
+### Current Implementation Status
 
-### R03 — Unbundling Detection
-- **Comprehensive + Component Pairs (`MEDIUM`)**: Detects when a provider bills both comprehensive and component CPT codes on the same date for the same member without valid override modifiers (`59`, `25`, `XE`).
-- **Provider-Level Escalation (`HIGH`)**: Automatically escalates to `HIGH` severity when a provider's overall unbundling rate exceeds the peer 95th percentile.
+| Workstream | Status | Details |
+| :--- | :--- | :--- |
+| **Backend & Integration** | **COMPLETE** | SQLite schema (15 tables), parameterized queries, FastAPI endpoints, evidence packet, deterministic verifier, Q&A engine, dual-mode loader (`fixture` vs `real`). |
+| **Detection Rules (R01–R05)** | **COMPLETE** | Duplicate billing, upcoding bell curve, unbundling, phantom services, excessive utilization. |
+| **Detection Rules (R06–R10)** | **COMPLETE** | Impossible timing, referral anomaly, geographic anomaly, shared identity links, burst/spike detection. |
+| **Network Intelligence** | **IN PROGRESS** | Graph builder, provider projection, Louvain community detection, network feature calculation (preliminary implementation active; real community calibration ongoing). |
+| **ML & Risk Intelligence** | **IN PROGRESS** | LightGBM, grouped OOF, isotonic calibration, SHAP attribution, Isolation Forest, unified risk scorer, future risk 30/60/90, upstream SIU queue builder. |
+| **Frontend** | **IN PROGRESS** | Independent React/Vite UI consuming the OpenAPI contract at `http://localhost:8000/docs`. |
 
-### R04 — Phantom Services Detection
-- **Deceased Member Billing (`CRITICAL`)**: Claims with `service_from > death_date`.
-- **Post-Termination Billing (`HIGH`)**: Claims with `service_from > termination_date` (or `enrollment_end`).
-- **Inpatient Overlap (`HIGH`)**: Outpatient claims billed during a confirmed inpatient admission at a different facility.
-- **Facility Status Checks (`HIGH` / `MEDIUM`)**: Claims billed before facility `open_date`, after `close_date`, or on days the facility does not operate.
-- **Orphan Ambulance (`MEDIUM`)**: Ambulance transport claims (`A0xxx`) with no associated hospital or emergency claim within $\pm 1$ day.
-- **Ghost Member Heuristic (`LOW`)**: Members with no historical claims for 12+ months presenting with 5+ claims with a single provider (weak signal, never triggers a case on its own).
-
-### R05 — Excessive Utilization Detection
-- **Member Rolling 30-Day Caps (`MEDIUM`)**: Enforces clinical rolling 30-day limits on sensitive procedure groups (e.g. max 12 physical therapy visits in any rolling 30-day window).
-- **Provider Mean Visits (`HIGH`)**: Detects providers whose average visits per member exceeds $3.0\times$ the peer group median.
+> [!NOTE]
+> **No Fake Outputs:** The backend does **not** implement competing substitutes for unfinished ML, risk, or network components. In `DATA_MODE=real`, the backend requires genuine upstream artifacts and will fail loudly if they are absent or malformed.
 
 ---
 
-## Shared Alert / Evidence Contract
+## 3. Real Data vs. Fixture Data (`DATA_MODE`)
 
-Every detection rule in Vigil-X conforms to the platform contract in [alert.py](file:///Users/shaktisaravananr07/Desktop/vigil-x/src/vigilx/models/alert.py):
+Vigil-X explicitly distinguishes real pipeline outputs from temporary development fixtures using the `VIGILX_DATA_MODE` (or `DATA_MODE`) configuration:
 
-```python
-from vigilx.models.alert import Alert, Evidence, Severity
+### Fixture Mode (`DATA_MODE=fixture`, default for local dev)
+- Unblocks frontend and API development while ML models are being trained.
+- When upstream analytical files are not yet generated, deterministic cases and queue items are synthesized from alerts.
+- Responses include `"synthetic": true`, `"as_of": ...`, and `"data_mode": "fixture"`.
 
-alert = Alert(
-    alert_id=Alert.make_id(),
-    rule_id="R01",
-    rule_version="1.0",
-    entity_type="provider",      # "provider", "member", or "facility"
-    entity_id="PRV_12345",
-    claim_ids=["C101", "C102"],
-    severity=Severity.HIGH,      # LOW, MEDIUM, HIGH, CRITICAL
-    est_dollars=450.00,
-    evidence=[...],              # List of Evidence dataclasses
-    fp_notes=["..."]
-)
-```
-
-Each `Evidence` entry includes:
-- `evidence_id`: Unique identifier (e.g., `E-R01-xxxx`)
-- `rule_id` & `rule_version`
-- `claim_ids`: Tracing IDs for SIU inspection
-- `fields_matched`: Specific data columns triggering the rule
-- `plain_text`: Human-readable explanation for investigator reports
-- `est_overpay`: Estimated questionable dollars
-- `severity`: Item severity
-- `fp_notes`: Potential false positive considerations
+### Real Mode (`DATA_MODE=real`)
+- Enforces strict validation against upstream analytical outputs (`cases`, `queue_items`, `risk_scores`).
+- **Fails loudly** with `MissingAnalyticalOutputError` if required ML/Risk outputs are missing.
+- Silent fabrication of risk scores or queue priority is strictly blocked.
+- Accessing `/api/queue` before real queue outputs are ingested returns HTTP 503 (`Queue data unavailable in REAL mode`).
 
 ---
 
-## Integration Guide for Teammates (R06 – R10)
+## 4. Analytical Contracts
 
-The subsystem is architected for zero-friction integration. Teammates implementing R06–R10 do not need to modify any existing rule code:
+Upstream workstreams integrate with the backend via stable Pydantic v2 schemas defined in `contracts/analytical.py`:
 
-```python
-from vigilx.rules.base import BaseRule
-from vigilx.runner import create_full_runner
-from vigilx.models.alert import Alert, Severity
+- **Alerts & Evidence:** `AlertInput`, `EvidenceInput`
+- **Cases:** `CaseInput`
+- **Case Evidence Ledger:** `CaseEvidenceInput`
+- **SIU Queue:** `QueueItemInput`
+- **Unified Risk Scores:** `UnifiedRiskScoreInput`
+- **Network Intelligence:** `NetworkScoreInput`
+- **Claim ML Scores:** `ClaimMLScoreInput`
+- **Evaluation Results:** `EvaluationResultInput`
 
-class MyNetworkRule(BaseRule):
-    rule_id = "R06"
-
-    def detect(self, data: dict) -> list[Alert]:
-        # Implement R06 detection logic
-        return [...]
-
-# Create runner pre-loaded with R01-R05 and register your rule
-runner = create_full_runner()
-runner.register(MyNetworkRule)
-
-# Run full pipeline
-data = {"claims": claims_df, "providers": providers_df}
-alerts = runner.run(data)
-```
+For full schema definitions, field types, range bounds, and example payloads, consult [docs/backend_integration_contract.md](file:///Users/shrutika/vigil-x/vigil-x/docs/backend_integration_contract.md).
 
 ---
 
-## Testing & Verification
+## 5. GenAI Narration & Deterministic Verifier
 
-Run the complete test suite:
+### Grounded GenAI Narration
+The GenAI layer acts strictly as an **investigative narrator**, never as a fraud detector.
+- It receives **ONLY** the structured, tamper-proof `EvidencePacket`.
+- It is instructed to state `"Prioritized for human investigation"` and is forbidden from declaring `"fraud confirmed"`.
+- Supports OpenAI, Anthropic, and Google Gemini via standard environment variables (`OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `GEMINI_API_KEY`).
 
+### Prompt-Injection Defense
+All database and clinical text is wrapped inside `<evidence_data>` tags and treated as untrusted data. Instructions to "ignore previous instructions" or "declare provider innocent" are treated as literal evidence text rather than executable commands.
+
+### Deterministic Verifier
+Every brief (whether generated by an LLM or fallback) is validated against the `EvidencePacket` before being returned:
+- Validates cited Claim IDs, Provider IDs, Member IDs, and Rule IDs.
+- Validates cited financial figures against case exposure bounds.
+- Flags forbidden conclusive fraud phrasing.
+- Fallback briefs run when LLM keys are absent, network calls fail, or generated text fails verification.
+
+### Whitelist-Only Q&A
+The `/api/ask` endpoint supports only whitelisted investigative intents:
+- `WHY_FLAGGED`, `SUPPORTING_CLAIMS`, `RELATED_PROVIDERS`, `NETWORK_CONNECTIONS`
+- `FINANCIAL_EXPOSURE`, `MEMBER_IMPACT`, `TIMELINE`, `RULE_EVIDENCE`, `FUTURE_RISK`, `BENIGN_EXPLANATIONS`
+- Free-form SQL, Python evaluation, and prompt override commands are refused with clear security notices.
+
+---
+
+## 6. API Endpoints
+
+All endpoints are hosted under `/api` and documented via OpenAPI at `/docs`.
+
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `GET` | `/api/health` | Readiness status, database connectivity, schema validity, and data mode |
+| `GET` | `/api/summary` | Platform-wide claims, paid totals, alerts, cases, and funnel counts |
+| `GET` | `/api/queue` | Prioritized SIU worklist with `capacity_hours`, `horizon`, and `sort` |
+| `GET` | `/api/cases/{id}` | Investigation case detail, risk scores, why flagged, timeline, claims |
+| `GET` | `/api/cases/{id}/evidence` | Granular evidence ledger with field-level provenance |
+| `GET` | `/api/cases/{id}/timeline` | Chronological claim activity and event history |
+| `GET` | `/api/cases/{id}/network` | Case-centered subgraph for network ring visualization |
+| `GET` | `/api/networks` | Collusion rings and community cluster summaries |
+| `GET` | `/api/networks/{id}` | Details for a specific network cluster |
+| `GET` | `/api/claims` | Search and filter claim records supporting investigations |
+| `GET` | `/api/providers` | Provider profiles and enrollment lookups |
+| `GET` | `/api/providers/{id}` | Specific provider profile details |
+| `GET` | `/api/risk` | Upstream risk scores and component signals |
+| `GET` | `/api/brief?case_id={id}` | Verified investigation brief (answers 6 mandatory SIU questions) |
+| `POST` | `/api/ask` | Whitelist-only structured Q&A retrieval |
+| `POST` | `/api/decision` | Case disposition recording (`accept`, `reject`, `escalate_for_review`) |
+| `GET` | `/api/audit` | Immutable audit log of all decisions and system events |
+| `GET` | `/api/evaluation` | Benchmark evaluation metrics and ring recovery rates |
+
+---
+
+## 7. Setup & Execution Commands
+
+### Prerequisites
+- Python 3.11+
+- Virtual environment or conda
+
+### Installation
 ```bash
-pytest -v
+pip install -r requirements.txt
 ```
 
-Run test suite with coverage report:
-
+### Build Database
 ```bash
-pytest --cov=vigilx --cov=eval --cov-report=term-missing
+# Generate synthetic dataset and build SQLite database
+make db
+
+# Or quick build for testing:
+make pipeline
 ```
 
-**Status:** 52 passing tests, **89% overall test coverage**.
+### Start Backend Server
+```bash
+make run
+# Server starts at http://localhost:8000
+# OpenAPI Docs available at http://localhost:8000/docs
+```
+
+### Run Tests
+```bash
+# Run backend and integration tests (37 tests)
+make test-backend
+
+# Run complete repository test suite (171 tests)
+make test
+```
