@@ -1,0 +1,116 @@
+# ==============================================================================
+# VIGIL-X UNIFIED RISK ENGINE CONFIGURATION
+# Standalone, explainable, defensible provider risk prioritization configuration.
+# All weights, thresholds, and normalization factors are configured here.
+# ==============================================================================
+
+engine_version: "1.0.0"
+model_version: "1.0.0"
+feature_version: "1.0.0"
+
+# ------------------------------------------------------------------------------
+# Core Signal Family Weights
+# Must sum to exactly 1.0. Validated at configuration load time.
+# ------------------------------------------------------------------------------
+weights:
+  rules: 0.25
+  ml: 0.25
+  anomaly: 0.15
+  network: 0.20
+  temporal: 0.05
+  future: 0.10
+  historical: 0.00
+
+# When certain signal families are missing/unavailable for a given provider,
+# setting renormalize_missing_weights to true dynamically redistributes the
+# available weights proportionally so that the active weights sum to 1.0,
+# while the missingness is penalized in the separate confidence score.
+renormalize_missing_weights: true
+
+# ------------------------------------------------------------------------------
+# Risk Prioritization Tiers
+# Categorizes the continuous risk score [0, 1] into operational SIU tiers.
+# ------------------------------------------------------------------------------
+risk_tiers:
+  low_threshold: 0.25       # [0.00, 0.25) -> LOW
+  moderate_threshold: 0.50  # [0.25, 0.50) -> MODERATE
+  high_threshold: 0.75      # [0.50, 0.75) -> HIGH; [0.75, 1.00] -> CRITICAL
+
+# ------------------------------------------------------------------------------
+# Evidence Strength Tiers
+# Evaluates how well-supported the risk suspicion is (corroboration & depth).
+# ------------------------------------------------------------------------------
+evidence_tiers:
+  low_threshold: 0.25       # [0.00, 0.25) -> LOW
+  moderate_threshold: 0.50  # [0.25, 0.50) -> MODERATE
+  high_threshold: 0.75      # [0.50, 0.75) -> HIGH; [0.75, 1.00] -> VERY_HIGH
+
+# ------------------------------------------------------------------------------
+# Confidence Tiers
+# Reflects data availability, completeness, and agreement between signal families.
+# ------------------------------------------------------------------------------
+confidence_tiers:
+  low_threshold: 0.40       # [0.00, 0.40) -> LOW
+  moderate_threshold: 0.70  # [0.40, 0.70) -> MEDIUM; [0.70, 1.00] -> HIGH
+
+# ------------------------------------------------------------------------------
+# Future Risk Horizon Weights
+# Weighted combination of forward-looking horizons (must sum to 1.0).
+# ------------------------------------------------------------------------------
+future_risk:
+  w_30d: 0.50
+  w_60d: 0.30
+  w_90d: 0.20
+
+# ------------------------------------------------------------------------------
+# Subsystem Normalization Parameters
+# Maps diverse raw subsystem outputs into deterministic [0, 1] scales.
+# ------------------------------------------------------------------------------
+normalization:
+  rules:
+    alert_count_cap: 10
+    dollars_cap: 50000.0
+    distinct_rules_cap: 5
+    severity_weights:
+      LOW: 0.25
+      MEDIUM: 0.50
+      HIGH: 0.75
+      CRITICAL: 1.00
+
+  ml:
+    high_risk_threshold: 0.50
+    rate_weight: 0.60
+    prob_weight: 0.40
+
+  anomaly:
+    percentile_scale: 100.0
+
+  network:
+    hard_link_weight: 0.35
+    referral_weight: 0.25
+    hub_centrality_weight: 0.20
+    size_cap: 15
+    size_weight: 0.20
+
+  temporal:
+    burst_cv_cap: 3.0
+    spike_multiplier_cap: 5.0
+
+# ------------------------------------------------------------------------------
+# Evidence Strength Calculation Weights
+# ------------------------------------------------------------------------------
+evidence:
+  family_activation_threshold: 0.20
+  rule_depth_weight: 0.30
+  ml_support_weight: 0.25
+  network_support_weight: 0.25
+  corroboration_weight: 0.20
+
+# ------------------------------------------------------------------------------
+# Confidence Score Calculation Weights
+# ------------------------------------------------------------------------------
+confidence:
+  availability_weight: 0.60
+  agreement_weight: 0.25
+  sample_size_weight: 0.15
+  claim_count_cap: 50
