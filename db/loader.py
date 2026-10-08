@@ -922,9 +922,11 @@ def rebuild_database(
                 stats["cases"] = cases_formed
 
             if risk_scores_data is not None:
-                validate_and_load_risk_scores(conn, risk_scores_data)
+                cnt_risk = validate_and_load_risk_scores(conn, risk_scores_data)
+                stats["risk_scores"] = cnt_risk
             if claim_ml_data is not None:
-                validate_and_load_claim_ml(conn, claim_ml_data)
+                cnt_ml = validate_and_load_claim_ml(conn, claim_ml_data)
+                stats["claim_ml"] = cnt_ml
 
         # 5. Evaluation metrics
         if eval_results:

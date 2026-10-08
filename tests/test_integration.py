@@ -79,3 +79,106 @@ def test_integration_no_ground_truth_leakage(synthetic_data):
         alert_str = str(alert.to_dict())
         assert "gt_" not in alert_str.lower() or "gt_" in "gt_scenarios"  # OK in metadata context
         assert "scenario_id" not in alert_str.lower()
+
+
+def test_end_to_end_full_pipeline(tmp_path):
+    """
+    Full end-to-end integration test validating:
+    1. synthetic data generation
+    2. R01-R10 detection pipeline
+    3. network intelligence
+    4. risk engine
+    5. case generation
+    6. queue generation
+    7. SQLite ingestion
+    8. FastAPI retrieval
+    9. evidence packet
+    10. GenAI deterministic fallback
+    11. frontend/API contract compatibility
+    """
+    from scripts.build_db import build_pipeline_and_db
+    from fastapi.testclient import TestClient
+    from api.main import app
+    from db.database import get_db_connection
+    import api.dependencies as deps
+
+    test_db = str(tmp_path / "test_e2e.db")
+
+    # 1 - 7: Run complete pipeline into isolated test database
+    stats = build_pipeline_and_db(db_path=test_db, quick=True)
+    assert stats["providers"] > 0
+    assert stats["claims"] > 0
+    assert stats["alerts"] > 0
+    assert stats["cases"] > 0
+    assert stats["queue_items"] > 0
+    assert stats["risk_scores"] > 0
+
+    # 8: Test FastAPI Retrieval with DB override
+    def override_get_db():
+        conn = get_db_connection(test_db)
+        try:
+            yield conn
+            conn.commit()
+        except Exception:
+            conn.rollback()
+            raise
+        finally:
+            conn.close()
+
+    app.dependency_overrides[deps.get_db] = override_get_db
+
+    try:
+        with TestClient(app) as client:
+            # 8a: Health endpoint
+            health_res = client.get("/api/health")
+            assert health_res.status_code == 200
+            assert health_res.json()["status"] == "healthy"
+
+            # 8b: Summary endpoint
+            summary_res = client.get("/api/summary")
+            assert summary_res.status_code == 200
+            s_data = summary_res.json()
+            assert s_data["claims_analyzed"] > 0
+            assert s_data["alerts_total"] > 0
+            assert s_data["entity_cases"] > 0
+            assert s_data["queue_size"] > 0
+
+            # 8c: Queue endpoint (ordered by priority/risk)
+            queue_res = client.get("/api/queue")
+            assert queue_res.status_code == 200
+            q_items = queue_res.json()["items"]
+            assert len(q_items) > 0
+            top_case_id = q_items[0]["case_id"]
+
+            # 8d: Case details endpoint
+            case_res = client.get(f"/api/cases/{top_case_id}")
+            assert case_res.status_code == 200
+            case_data = case_res.json()
+            assert case_data["case_id"] == top_case_id
+            assert "risk_score" in case_data
+            assert "priority" in case_data
+
+            # 9: Evidence Packet
+            ev_res = client.get(f"/api/cases/{top_case_id}/evidence")
+            assert ev_res.status_code == 200
+            ev_data = ev_res.json()
+            assert "evidence" in ev_data
+            assert isinstance(ev_data["evidence"], list)
+
+            # 10: Investigation Brief / GenAI deterministic fallback
+            brief_res = client.get(f"/api/brief?case_id={top_case_id}")
+            assert brief_res.status_code == 200
+            brief_data = brief_res.json()
+            assert brief_data["case_id"] == top_case_id
+            assert brief_data["verified"] is True
+            assert brief_data["verification_report"]["verified"] is True
+            assert brief_data["generation_mode"] in ["llm", "fallback"]
+
+            # 11: Whitelisted structured Q&A
+            qa_res = client.post("/api/ask", json={"case_id": top_case_id, "question": "Why was this provider flagged?"})
+            assert qa_res.status_code == 200
+            assert "answer" in qa_res.json()
+
+    finally:
+        app.dependency_overrides.clear()
+
