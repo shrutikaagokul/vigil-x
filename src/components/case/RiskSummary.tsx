@@ -39,20 +39,20 @@ export const RiskSummary: React.FC<RiskSummaryProps> = ({ caseItem }) => {
               data-testid="risk-index-value"
               className="font-serif text-3xl sm:text-4xl font-bold text-green-950 leading-none"
             >
-              {caseItem.risk_index}
+              {caseItem.risk_index != null ? caseItem.risk_index : '—'}
             </span>
             <span className="font-mono text-sm text-ink-subtle">/ 100</span>
           </div>
           <div className="w-full bg-paper h-2 border border-border overflow-hidden mt-1">
             <div
               className={`h-full ${
-                caseItem.risk_index >= 90
+                (caseItem.risk_index ?? 0) >= 90
                   ? 'bg-critical'
-                  : caseItem.risk_index >= 75
+                  : (caseItem.risk_index ?? 0) >= 75
                   ? 'bg-brick'
                   : 'bg-brass'
               }`}
-              style={{ width: `${caseItem.risk_index}%` }}
+              style={{ width: `${Math.min(100, Math.max(0, caseItem.risk_index ?? 0))}%` }}
             />
           </div>
           <span className="text-[11px] font-mono text-ink-muted block pt-0.5">
@@ -66,13 +66,15 @@ export const RiskSummary: React.FC<RiskSummaryProps> = ({ caseItem }) => {
             Financial Exposure
           </span>
           <span className="font-mono text-2xl sm:text-3xl font-bold text-green-950 block leading-none">
-            ${caseItem.est_dollars.toLocaleString()}
+            {caseItem.est_dollars != null ? `$${caseItem.est_dollars.toLocaleString()}` : '—'}
           </span>
-          <span className="text-xs text-brick font-mono font-semibold block pt-1">
-            ${caseItem.est_overpay.toLocaleString()} direct overpayment
-          </span>
+          {caseItem.est_overpay != null && caseItem.est_overpay > 0 && (
+            <span className="text-xs text-brick font-mono font-semibold block pt-1">
+              ${caseItem.est_overpay.toLocaleString()} direct overpayment
+            </span>
+          )}
           <span className="text-[11px] text-ink-muted block font-sans">
-            Calculated across {caseItem.claim_count} analyzed claims
+            Calculated across {caseItem.claim_count != null ? caseItem.claim_count : '—'} analyzed claims
           </span>
         </div>
 
@@ -82,10 +84,10 @@ export const RiskSummary: React.FC<RiskSummaryProps> = ({ caseItem }) => {
             Active Signal Models
           </span>
           <span className="font-mono text-2xl sm:text-3xl font-bold text-green-950 block leading-none">
-            {caseItem.rules_triggered.length}
+            {caseItem.rules_triggered?.length ?? 0}
           </span>
           <div className="flex flex-wrap gap-1 font-mono text-[11px] pt-1">
-            {caseItem.rules_triggered.map((rule) => (
+            {caseItem.rules_triggered?.map((rule) => (
               <span
                 key={rule}
                 className="px-1.5 py-0.5 bg-paper border border-border text-green-950 font-semibold"
@@ -108,25 +110,25 @@ export const RiskSummary: React.FC<RiskSummaryProps> = ({ caseItem }) => {
               <tr>
                 <td className="py-2 text-ink-muted">Estimated Total Financial Exposure</td>
                 <td className="py-2 text-right font-mono font-bold text-green-950">
-                  ${caseItem.est_dollars.toLocaleString()}
+                  {caseItem.est_dollars != null ? `$${caseItem.est_dollars.toLocaleString()}` : '—'}
                 </td>
               </tr>
               <tr>
                 <td className="py-2 text-ink-muted">Identifiable Line-Item Overpayment</td>
                 <td className="py-2 text-right font-mono font-bold text-brick">
-                  ${caseItem.est_overpay.toLocaleString()}
+                  {caseItem.est_overpay != null && caseItem.est_overpay > 0 ? `$${caseItem.est_overpay.toLocaleString()}` : '—'}
                 </td>
               </tr>
               <tr>
                 <td className="py-2 text-ink-muted">Claims Evaluated Under Triggered Rules</td>
                 <td className="py-2 text-right font-mono font-semibold text-ink">
-                  {caseItem.claim_count}
+                  {caseItem.claim_count != null ? caseItem.claim_count : '—'}
                 </td>
               </tr>
               <tr>
                 <td className="py-2 text-ink-muted">Deterministic Priority Score</td>
                 <td className="py-2 text-right font-mono font-semibold text-green-950">
-                  {caseItem.priority_score} / 100
+                  {caseItem.priority_score != null ? `${caseItem.priority_score} / 100` : '—'}
                 </td>
               </tr>
             </tbody>

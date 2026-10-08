@@ -6,7 +6,7 @@ export type CurrencyFormatMode = 'full' | 'compact';
 
 export function formatCurrency(amount?: number | null, mode: CurrencyFormatMode = 'full'): string {
   if (amount == null || isNaN(amount)) {
-    return '$0';
+    return '—';
   }
 
   if (mode === 'compact') {
@@ -35,9 +35,10 @@ export function formatCurrency(amount?: number | null, mode: CurrencyFormatMode 
 export const formatINR = formatCurrency;
 
 export function formatExposureRange(low?: number | null, high?: number | null): string {
-  if (low == null && high == null) return '$0';
+  if (low == null && high == null) return '—';
   if (low != null && high != null && low !== high) {
     return `${formatCurrency(low, 'compact')} – ${formatCurrency(high, 'compact')}`;
   }
-  return formatCurrency(high ?? low ?? 0, 'compact');
+  const val = high ?? low;
+  return val != null ? formatCurrency(val, 'compact') : '—';
 }

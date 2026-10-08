@@ -148,10 +148,7 @@ export const CaseDetailPage: React.FC = () => {
         )}
 
         {/* 1. Spacious Case Document Header */}
-        <CaseHeader
-          caseItem={caseItem}
-          onOpenDecisionModal={() => handleOpenDecision('accept')}
-        />
+        <CaseHeader caseItem={caseItem} />
 
         {/* 2. Main Chapter Navigation Workspace */}
         {isEvidenceLoading ? (

@@ -61,9 +61,9 @@ export const WhyFlagged: React.FC<WhyFlaggedProps> = ({
           </span>
           <span className="text-border-strong">·</span>
           <span>
-            Analyzed Claims: <strong className="font-mono text-ink">{caseItem.claim_count}</strong>
+            Analyzed Claims: <strong className="font-mono text-ink">{caseItem.claim_count != null ? caseItem.claim_count : '—'}</strong>
           </span>
-          {caseItem.est_overpay > 0 && (
+          {caseItem.est_overpay != null && caseItem.est_overpay > 0 && (
             <>
               <span className="text-border-strong">·</span>
               <span>
@@ -93,63 +93,64 @@ export const WhyFlagged: React.FC<WhyFlaggedProps> = ({
           ) : (
             topReasons.map((ev) => {
               const severityClass = {
-              CRITICAL: 'bg-critical-soft text-critical border-critical/30',
-              HIGH: 'bg-brick-soft text-brick border-brick/30',
-              MEDIUM: 'bg-brass-soft text-ink border-brass/40',
-              LOW: 'bg-paper-subtle text-ink-subtle border-border',
-            }[ev.severity] || 'bg-paper-subtle text-ink';
+                CRITICAL: 'bg-critical-soft text-critical border-critical/30',
+                HIGH: 'bg-brick-soft text-brick border-brick/30',
+                MEDIUM: 'bg-brass-soft text-ink border-brass/40',
+                LOW: 'bg-paper-subtle text-ink-subtle border-border',
+              }[ev.severity] || 'bg-paper-subtle text-ink';
 
-            return (
-              <div
-                key={ev.evidence_id}
-                className="p-3.5 sm:p-4 flex flex-col md:flex-row md:items-center justify-between gap-3 hover:bg-paper-subtle/40 transition-colors"
-              >
-                {/* Left: Metadata chips & One-line explanation */}
-                <div className="flex flex-col sm:flex-row sm:items-center gap-3 flex-1 min-w-0">
-                  <div className="flex items-center gap-2 shrink-0">
-                    {/* Clickable Evidence ID Chip */}
-                    <button
-                      type="button"
-                      data-testid="evidence-id-chip"
-                      onClick={() => onSelectEvidence?.(ev.evidence_id)}
-                      title="Click to view in Evidence chapter"
-                      className="font-mono text-xs font-bold text-green-950 bg-paper border border-border px-2 py-0.5 hover:bg-green-100 hover:border-green-300 transition-colors cursor-pointer"
-                    >
-                      {ev.evidence_id}
-                    </button>
+              return (
+                <div
+                  key={ev.evidence_id}
+                  className="p-3.5 sm:p-4 flex flex-col md:flex-row md:items-center justify-between gap-3 hover:bg-paper-subtle/40 transition-colors"
+                >
+                  {/* Left: Metadata chips & One-line explanation */}
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-3 flex-1 min-w-0">
+                    <div className="flex items-center gap-2 shrink-0">
+                      {/* Clickable Evidence ID Chip */}
+                      <button
+                        type="button"
+                        data-testid="evidence-id-chip"
+                        onClick={() => onSelectEvidence?.(ev.evidence_id)}
+                        title="Click to view in Evidence chapter"
+                        className="font-mono text-xs font-bold text-green-950 bg-paper border border-border px-2 py-0.5 hover:bg-green-100 hover:border-green-300 transition-colors cursor-pointer"
+                      >
+                        {ev.evidence_id}
+                      </button>
 
-                    {/* Rule ID & Version */}
-                    <span className="font-mono text-xs text-ink-muted px-2 py-0.5 bg-paper border border-border">
-                      {ev.rule_id} · v{ev.rule_version}
-                    </span>
+                      {/* Rule ID & Version */}
+                      <span className="font-mono text-xs text-ink-muted px-2 py-0.5 bg-paper border border-border">
+                        {ev.rule_id} · v{ev.rule_version}
+                      </span>
 
-                    {/* Severity Badge */}
-                    <span className={`px-2 py-0.5 text-[11px] font-mono font-bold uppercase border ${severityClass}`}>
-                      {ev.severity}
-                    </span>
+                      {/* Severity Badge */}
+                      <span className={`px-2 py-0.5 text-[11px] font-mono font-bold uppercase border ${severityClass}`}>
+                        {ev.severity}
+                      </span>
+                    </div>
+
+                    {/* One-Line Explanation */}
+                    <p className="text-sm text-ink leading-snug font-normal truncate">
+                      {ev.plain_text}
+                    </p>
                   </div>
 
-                  {/* One-Line Explanation */}
-                  <p className="text-sm text-ink leading-snug font-normal line-clamp-2 md:line-clamp-1">
-                    {ev.plain_text}
-                  </p>
+                  {/* Right: Financial Figure (only if available) */}
+                  {ev.est_overpay != null && ev.est_overpay > 0 && (
+                    <div className="shrink-0 flex items-baseline gap-1.5 font-mono text-xs self-start md:self-center">
+                      <span className="text-[11px] text-ink-subtle uppercase">Overpayment:</span>
+                      <strong
+                        data-testid="evidence-overpay"
+                        className="font-bold text-brick text-sm tabular-nums"
+                      >
+                        ${ev.est_overpay.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </strong>
+                    </div>
+                  )}
                 </div>
-
-                {/* Right: Financial Figure (only if available) */}
-                {ev.est_overpay > 0 && (
-                  <div className="shrink-0 flex items-baseline gap-1.5 font-mono text-xs self-start md:self-center">
-                    <span className="text-[11px] text-ink-subtle uppercase">Overpayment:</span>
-                    <strong
-                      data-testid="evidence-overpay"
-                      className="font-bold text-brick text-sm tabular-nums"
-                    >
-                      ${ev.est_overpay.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </strong>
-                  </div>
-                )}
-              </div>
-            );
-          }))}
+              );
+            })
+          )}
         </div>
       </div>
     </section>

@@ -17,8 +17,11 @@ export const EvidenceRow: React.FC<EvidenceRowProps> = ({
   const rowRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
-    if (isSelected && rowRef.current && typeof rowRef.current.scrollIntoView === 'function') {
-      rowRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    if (isSelected && rowRef.current) {
+      if (typeof rowRef.current.scrollIntoView === 'function') {
+        rowRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+      rowRef.current.focus?.();
     }
   }, [isSelected]);
 

@@ -51,7 +51,7 @@ export const RAW_MOCK_QUEUE_ITEMS: readonly QueueItem[] = [
     behavioral_signal: 0.92,
     community_id: 1,
     cost_of_delay_4w: 640000,
-    members_affected: 412,
+    members_affected: 102,
     rules_triggered: ['R06', 'R07', 'R08', 'R09', 'R10'],
     primary_indicator:
       'Indicators consistent with 6-entity shared banking ring, reciprocal PT referrals, and same-day toxicology surge',
@@ -350,15 +350,20 @@ export function calculateMockQueue(params: QueueQueryParams = {}): QueueResponse
 
   items = items.map((item) => {
     let fits = false;
-    if (item.pool === 'network') {
-      if (accumulatedNetwork + item.effort_hours <= networkHours || accumulatedNetwork + accumulatedGeneral + item.effort_hours <= totalCapacity) {
-        fits = true;
-        accumulatedNetwork += item.effort_hours;
-      }
-    } else {
-      if (accumulatedGeneral + item.effort_hours <= generalHours || accumulatedNetwork + accumulatedGeneral + item.effort_hours <= totalCapacity) {
-        fits = true;
-        accumulatedGeneral += item.effort_hours;
+    const effort = typeof item.effort_hours === 'number' && !isNaN(item.effort_hours) ? item.effort_hours : null;
+    const pool = item.pool === 'network' || item.requires_network_specialist ? 'network' : (item.pool === 'general' ? 'general' : null);
+
+    if (effort !== null && effort > 0 && pool !== null) {
+      if (pool === 'network') {
+        if (accumulatedNetwork + effort <= networkHours) {
+          fits = true;
+          accumulatedNetwork += effort;
+        }
+      } else {
+        if (accumulatedGeneral + effort <= generalHours) {
+          fits = true;
+          accumulatedGeneral += effort;
+        }
       }
     }
 
@@ -383,7 +388,7 @@ export function calculateMockQueue(params: QueueQueryParams = {}): QueueResponse
       general_hours: generalHours,
       network_hours: networkHours,
       total_hours: totalCapacity,
-      estimated_cases_addressable: Math.max(1, addressableCount),
+      estimated_cases_addressable: addressableCount,
       network_backlog_hours: Math.max(0, 80 - networkHours * 2),
     },
   };

@@ -6,6 +6,7 @@ import { formatExposureRange, formatCurrency } from '@/utils/currency';
 interface QueueWorklistProps {
   readonly items: readonly QueueItem[];
   readonly selectedCaseId: string | null;
+  readonly addressableIds?: ReadonlySet<string>;
   readonly addressableCount: number;
   readonly allocatedHours: number;
   readonly usedHours: number;
@@ -15,6 +16,7 @@ interface QueueWorklistProps {
 export const QueueWorklist: React.FC<QueueWorklistProps> = ({
   items,
   selectedCaseId,
+  addressableIds,
   addressableCount,
   allocatedHours,
   usedHours,
@@ -54,8 +56,10 @@ export const QueueWorklist: React.FC<QueueWorklistProps> = ({
           <AnimatePresence initial={false}>
             {items.map((item, index) => {
               const rank = index + 1;
-              const isDeferred = index >= boundaryIndex;
-              const isBoundary = index === boundaryIndex;
+              const isDeferred = addressableIds
+                ? !addressableIds.has(item.case_id)
+                : index >= addressableCount;
+              const isBoundary = index === boundaryIndex && boundaryIndex > 0 && boundaryIndex <= items.length;
               const isSelected = selectedCaseId === item.case_id;
 
               const displayName = item.name || item.focal_provider_name || item.title;

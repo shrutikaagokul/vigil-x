@@ -41,7 +41,7 @@ export const DashboardMetrics: React.FC<DashboardMetricsProps> = ({ queueData, s
           <span className="text-[0.875rem] text-[#4F5F55] ml-2">active cases</span>
         </div>
         <p className="text-sm text-[#4F5F55] mt-1">
-          {summary?.active_alerts_count || 24} correlated risk alerts across providers
+          {summary?.active_alerts_count != null ? `${summary.active_alerts_count} correlated risk alerts across providers` : 'Correlated risk alerts across providers'}
         </p>
       </div>
 

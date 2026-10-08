@@ -45,7 +45,7 @@ export const NetworkPlaceholder: React.FC<NetworkPlaceholderProps> = ({ network,
             Entities (Nodes)
           </span>
           <span className="font-serif text-2xl font-bold text-green-950 block mt-1">
-            {network?.summary?.n_nodes ?? 6}
+            {network?.summary?.n_nodes != null ? network.summary.n_nodes : '—'}
           </span>
           <span className="text-[11px] text-ink-muted mt-0.5 block font-sans">
             Affiliated Providers &amp; Entities
@@ -57,7 +57,7 @@ export const NetworkPlaceholder: React.FC<NetworkPlaceholderProps> = ({ network,
             Relationships (Edges)
           </span>
           <span className="font-serif text-2xl font-bold text-green-950 block mt-1">
-            {network?.summary?.n_edges ?? 14}
+            {network?.summary?.n_edges != null ? network.summary.n_edges : '—'}
           </span>
           <span className="text-[11px] text-ink-muted mt-0.5 block font-sans">
             Referral &amp; Corporate Links
@@ -69,7 +69,7 @@ export const NetworkPlaceholder: React.FC<NetworkPlaceholderProps> = ({ network,
             Patient Cohorts
           </span>
           <span className="font-serif text-2xl font-bold text-green-950 block mt-1">
-            {network?.summary?.n_cohorts ?? 3}
+            {network?.summary?.n_cohorts != null ? network.summary.n_cohorts : '—'}
           </span>
           <span className="text-[11px] text-ink-muted mt-0.5 block font-sans">
             Co-Billed Member Clusters
@@ -81,7 +81,7 @@ export const NetworkPlaceholder: React.FC<NetworkPlaceholderProps> = ({ network,
             Shared Members
           </span>
           <span className="font-serif text-2xl font-bold text-green-950 block mt-1">
-            {network?.summary?.total_members ?? 48}
+            {network?.summary?.total_members != null ? network.summary.total_members : '—'}
           </span>
           <span className="text-[11px] text-ink-muted mt-0.5 block font-sans">
             Cross-Provider Patients

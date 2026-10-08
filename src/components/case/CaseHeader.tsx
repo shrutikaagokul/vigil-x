@@ -4,7 +4,6 @@ import { Case } from '@/types/case';
 
 interface CaseHeaderProps {
   readonly caseItem: Case;
-  readonly onOpenDecisionModal?: () => void;
 }
 
 export const CaseHeader: React.FC<CaseHeaderProps> = ({ caseItem }) => {
@@ -112,7 +111,7 @@ export const CaseHeader: React.FC<CaseHeaderProps> = ({ caseItem }) => {
                 data-testid="risk-index-value"
                 className="font-serif text-3xl sm:text-4xl font-bold text-green-950 leading-none"
               >
-                {caseItem.risk_index}
+                {caseItem.risk_index != null ? caseItem.risk_index : '—'}
               </span>
               <span className="font-mono text-sm text-ink-subtle">/100</span>
             </div>
@@ -123,9 +122,9 @@ export const CaseHeader: React.FC<CaseHeaderProps> = ({ caseItem }) => {
               Total Exposure
             </span>
             <span className="font-mono text-lg sm:text-xl font-bold text-green-950 block mt-0.5">
-              ${caseItem.est_dollars.toLocaleString()}
+              {caseItem.est_dollars != null ? `$${caseItem.est_dollars.toLocaleString()}` : '—'}
             </span>
-            {caseItem.est_overpay > 0 && (
+            {caseItem.est_overpay != null && caseItem.est_overpay > 0 && (
               <span className="text-xs text-brick font-mono font-semibold">
                 ${caseItem.est_overpay.toLocaleString()} overpayment
               </span>

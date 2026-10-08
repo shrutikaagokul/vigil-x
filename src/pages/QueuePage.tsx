@@ -91,34 +91,40 @@ export const QueuePage: React.FC = () => {
   // Client-side capacity calculations
   const totalCapacity = generalHours + networkHours;
 
-  const { addressableCount, usedHours, totalAtRisk } = useMemo(() => {
+  const { addressableCount, usedHours, totalAtRisk, addressableIds } = useMemo(() => {
     let accGen = 0;
     let accNet = 0;
     let fit = 0;
     let riskSum = 0;
+    const addressableSet = new Set<string>();
 
     filteredItems.forEach((item) => {
       riskSum += item.exposure_high || item.est_dollars || 0;
-      const effort = item.effort_hours || (item.pool === 'network' ? 20 : 8);
+      const effort = typeof item.effort_hours === 'number' && !isNaN(item.effort_hours) ? item.effort_hours : null;
+      const pool = item.pool === 'network' || item.requires_network_specialist ? 'network' : (item.pool === 'general' ? 'general' : null);
 
-      if (item.pool === 'network') {
-        if (accNet + effort <= networkHours) {
-          fit++;
-          accNet += effort;
-        }
-      } else {
-        if (accGen + effort <= generalHours) {
-          fit++;
-          accGen += effort;
+      if (effort !== null && effort > 0 && pool !== null) {
+        if (pool === 'network') {
+          if (accNet + effort <= networkHours) {
+            fit++;
+            accNet += effort;
+            addressableSet.add(item.case_id);
+          }
+        } else {
+          if (accGen + effort <= generalHours) {
+            fit++;
+            accGen += effort;
+            addressableSet.add(item.case_id);
+          }
         }
       }
     });
 
-    const used = accGen + accNet;
     return {
-      addressableCount: Math.max(1, fit),
-      usedHours: used > 0 ? used : (filteredItems[0]?.effort_hours || 10),
+      addressableCount: fit,
+      usedHours: accGen + accNet,
       totalAtRisk: riskSum,
+      addressableIds: addressableSet,
     };
   }, [filteredItems, generalHours, networkHours]);
 
@@ -143,7 +149,7 @@ export const QueuePage: React.FC = () => {
   }, [filteredItems, selectedIndex]);
 
   const selectedRank = selectedIndex >= 0 ? selectedIndex + 1 : 1;
-  const isSelectedDeferred = selectedIndex >= addressableCount;
+  const isSelectedDeferred = selectedCase ? !addressableIds.has(selectedCase.case_id) : false;
 
   // Global Keyboard Navigation (ArrowUp, ArrowDown, Enter, "/")
   const handleKeyDown = useCallback(
@@ -233,6 +239,7 @@ export const QueuePage: React.FC = () => {
             <QueueWorklist
               items={filteredItems}
               selectedCaseId={selectedCaseId}
+              addressableIds={addressableIds}
               addressableCount={addressableCount}
               allocatedHours={totalCapacity}
               usedHours={usedHours}

@@ -11,9 +11,9 @@ export const DashboardPosture: React.FC<DashboardPostureProps> = ({ summary, que
   const items = queueData?.items || [];
 
   // Severity counts
-  const criticalCount = items.filter((i) => i.severity === 'CRITICAL').length || 1;
-  const highCount = items.filter((i) => i.severity === 'HIGH').length || 2;
-  const mediumCount = items.filter((i) => i.severity === 'MEDIUM').length || 2;
+  const criticalCount = items.filter((i) => i.severity === 'CRITICAL').length;
+  const highCount = items.filter((i) => i.severity === 'HIGH').length;
+  const mediumCount = items.filter((i) => i.severity === 'MEDIUM').length;
 
   const topCategories = summary?.top_risk_categories || [
     { category: 'Shared Banking & Entity Rings', rule_id: 'R09', count: 7 },
