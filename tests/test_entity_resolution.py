@@ -4,12 +4,14 @@ import pandas as pd
 from entity_resolution.resolver import (
     normalize_address,
     normalize_name,
+    extract_suite,
     resolve_entities,
     build_entity_clusters,
 )
 
 CONFIG = {
     "fuzzy_threshold": 88,
+    "mob_threshold": 5,
     "link_weights": {
         "bank_hash": 1.0, "tin_hash": 1.0,
         "owner_exact": 0.9, "owner_fuzzy": 0.7,
@@ -36,7 +38,7 @@ def test_resolve_fuzzy_owner():
         {"provider_id": "P001", "owner_name": "MedGroup Holdings LLC",
          "bank_hash": "B1", "address": "100 A St", "tin_hash": None,
          "suite": None, "registered_agent": None},
-        {"provider_id": "P002", "owner_name": "Medgroup Holdings",
+        {"provider_id": "P002", "owner_name": "Medgroup Holdings Inc",
          "bank_hash": "B2", "address": "200 B St", "tin_hash": None,
          "suite": None, "registered_agent": None},
     ])
@@ -77,12 +79,45 @@ def test_no_links():
 def test_address_normalization_edge_cases():
     assert normalize_address("123 Main Street, Suite 100") == "123 main st ste 100"
     assert normalize_address("  456   OAK   AVENUE  ") == "456 oak ave"
+    assert normalize_address("789 North Elm Street") == "789 n elm st"
     assert normalize_address(None) is None
     assert normalize_address("") is None
     assert normalize_address(42) is None
 
 
+def test_extract_suite():
+    base, suite = extract_suite("100 Main St Ste 200")
+    assert suite is not None
+    assert "ste 200" in suite.lower()
+    assert "100 Main St" in base
+
+    base2, suite2 = extract_suite("500 Oak Ave")
+    assert suite2 is None
+    assert base2 == "500 Oak Ave"
+
+
 def test_name_normalization_edge_cases():
     assert normalize_name("Dr. John Q. Smith, Jr.") == "dr john q smith jr"
+    assert normalize_name("ABC Healthcare LLC", strip_corp=True) == "abc healthcare"
     assert normalize_name("   spaces   ") == "spaces"
     assert normalize_name(None) is None
+
+
+def test_mob_safeguard():
+    # 6 providers sharing an address without suite (exceeds mob_threshold of 5)
+    records = []
+    for i in range(6):
+        records.append({
+            "provider_id": f"PMOB{i}",
+            "address": "100 Medical Center Pkwy",
+            "suite": None,
+            "bank_hash": f"BH{i}",
+            "owner_name": f"Owner {i}",
+        })
+    providers = pd.DataFrame(records)
+    links = resolve_entities(providers, config=CONFIG)
+    addr_links = [l for l in links if l.link_basis == "address_no_suite"]
+    assert len(addr_links) > 0
+    # Check MOB flag in matched_value and reduced confidence
+    assert any("[MOB]" in l.matched_value for l in addr_links)
+    assert all(l.confidence <= 0.4 for l in addr_links)

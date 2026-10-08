@@ -3,9 +3,11 @@ Entity resolution for Vigil-X.
 
 Resolves provider/facility/owner identity links using:
 - Exact bank/TIN hash matching
-- Normalized address + suite matching
-- Fuzzy ownership name matching (rapidfuzz token_set_ratio)
+- Normalized address + suite matching (with suite extraction fallback)
+- Directional and suffix address normalization
+- Fuzzy ownership name matching (rapidfuzz token_set_ratio with corporate suffix stripping)
 - Shared registered agent
+- Medical Office Building (MOB) high-density overmatching safeguards
 
 All matching is explainable — every link has a basis and confidence.
 """
@@ -21,7 +23,7 @@ from rapidfuzz import fuzz
 
 from config.loader import get_rule_config
 
-# Common address suffix normalization map
+# Common address suffix and directional normalization map
 _ADDR_SUFFIXES = {
     "street": "st", "st.": "st", "avenue": "ave", "ave.": "ave",
     "boulevard": "blvd", "blvd.": "blvd", "drive": "dr", "dr.": "dr",
@@ -30,6 +32,16 @@ _ADDR_SUFFIXES = {
     "place": "pl", "pl.": "pl", "suite": "ste", "ste.": "ste",
     "apartment": "apt", "apt.": "apt", "building": "bldg", "bldg.": "bldg",
     "floor": "fl", "fl.": "fl", "unit": "unit", "#": "unit",
+    "north": "n", "n.": "n", "south": "s", "s.": "s",
+    "east": "e", "e.": "e", "west": "w", "w.": "w",
+    "northeast": "ne", "ne.": "ne", "northwest": "nw", "nw.": "nw",
+    "southeast": "se", "se.": "se", "southwest": "sw", "sw.": "sw",
+}
+
+# Common corporate / title suffixes for entity name normalization
+_CORP_SUFFIXES = {
+    "llc", "inc", "corp", "corporation", "co", "company", "ltd", "limited",
+    "pc", "pa", "pllc", "group", "holdings", "associates", "md", "do", "np",
 }
 
 
@@ -60,13 +72,33 @@ class EntityCluster:
         return asdict(self)
 
 
+def extract_suite(address: str) -> Tuple[str, Optional[str]]:
+    """
+    Extract suite/unit number from address string if present.
+
+    Returns:
+        (base_address, suite_str)
+    """
+    if not address or not isinstance(address, str):
+        return address, None
+
+    suite_pattern = r'\b(ste|suite|apt|apartment|unit|bldg|building|fl|floor|#)\s*#?\s*([a-zA-Z0-9\-]+)\b'
+    match = re.search(suite_pattern, address, re.IGNORECASE)
+    if match:
+        suite_str = f"{match.group(1)} {match.group(2)}"
+        base_address = address[:match.start()] + address[match.end():]
+        base_address = re.sub(r'\s+', ' ', base_address).strip()
+        return base_address, suite_str
+    return address, None
+
+
 def normalize_address(address: Optional[str]) -> Optional[str]:
     """
     Normalize an address string for matching.
 
     - lowercase
     - strip punctuation (except unit markers)
-    - normalize common suffixes
+    - normalize common suffixes & directionals
     - collapse whitespace
     """
     if not address or not isinstance(address, str) or address.strip() == "":
@@ -77,7 +109,7 @@ def normalize_address(address: Optional[str]) -> Optional[str]:
     addr = re.sub(r'\.(?!\d)', '', addr)
     # Normalize commas
     addr = addr.replace(",", " ")
-    # Normalize suffixes
+    # Normalize suffixes and directionals
     words = addr.split()
     normalized = []
     for w in words:
@@ -88,21 +120,25 @@ def normalize_address(address: Optional[str]) -> Optional[str]:
     return addr
 
 
-def normalize_name(name: Optional[str]) -> Optional[str]:
+def normalize_name(name: Optional[str], strip_corp: bool = False) -> Optional[str]:
     """
     Normalize a person/organization name for matching.
 
     - lowercase
     - remove punctuation
     - collapse whitespace
+    - optionally strip common corporate/professional suffixes
     """
     if not name or not isinstance(name, str) or name.strip() == "":
         return None
 
     n = name.lower().strip()
     n = re.sub(r'[^\w\s]', '', n)
-    n = re.sub(r'\s+', ' ', n).strip()
-    return n
+    words = n.split()
+    if strip_corp and len(words) > 1:
+        words = [w for w in words if w not in _CORP_SUFFIXES]
+    n = " ".join(words).strip()
+    return n if n else None
 
 
 def _find_exact_links(
@@ -142,14 +178,37 @@ def _find_exact_links(
 def _find_address_links(
     providers: pd.DataFrame,
     link_weights: Dict[str, float],
+    mob_threshold: int = 5,
 ) -> List[IdentityLink]:
-    """Find address-based links (with and without suite)."""
+    """
+    Find address-based links (with and without suite).
+
+    Includes MOB (Medical Office Building) safeguards to avoid overmatching
+    unrelated providers located at high-density commercial addresses.
+    """
     links = []
     df = providers.copy()
-    df["_norm_addr"] = df["address"].apply(normalize_address)
-    df["_norm_suite"] = df.get("suite", pd.Series(dtype=str)).apply(
-        lambda x: normalize_address(x) if pd.notna(x) else None
-    )
+
+    # Pre-extract suite if missing in suite column but present in address
+    norm_addrs = []
+    norm_suites = []
+    for _, row in df.iterrows():
+        raw_addr = row.get("address")
+        raw_suite = row.get("suite") if pd.notna(row.get("suite")) else None
+
+        if not raw_suite and raw_addr:
+            base_addr, ext_suite = extract_suite(str(raw_addr))
+            addr_n = normalize_address(base_addr)
+            suite_n = normalize_address(ext_suite) if ext_suite else None
+        else:
+            addr_n = normalize_address(raw_addr)
+            suite_n = normalize_address(raw_suite) if raw_suite else None
+
+        norm_addrs.append(addr_n)
+        norm_suites.append(suite_n)
+
+    df["_norm_addr"] = norm_addrs
+    df["_norm_suite"] = norm_suites
 
     # Full address + suite match
     with_suite = df.dropna(subset=["_norm_addr", "_norm_suite"]).copy()
@@ -184,6 +243,11 @@ def _find_address_links(
                     suite_linked.add((link.source_id, link.target_id))
                     suite_linked.add((link.target_id, link.source_id))
 
+            # MOB overmatching safeguard: if address has many providers, lower weight/confidence
+            is_mob = len(pids) >= mob_threshold
+            conf = 0.3 if is_mob else 0.6
+            w = link_weights.get("address_no_suite", 0.4) * (0.5 if is_mob else 1.0)
+
             for i in range(len(pids)):
                 for j in range(i + 1, len(pids)):
                     if (pids[i], pids[j]) not in suite_linked:
@@ -191,9 +255,9 @@ def _find_address_links(
                             source_type="provider", source_id=pids[i],
                             target_type="provider", target_id=pids[j],
                             link_basis="address_no_suite",
-                            confidence=0.6,
-                            matched_value=val,
-                            weight=link_weights.get("address_no_suite", 0.4),
+                            confidence=conf,
+                            matched_value=f"{val}{' [MOB]' if is_mob else ''}",
+                            weight=w,
                         ))
     return links
 
@@ -207,6 +271,7 @@ def _find_fuzzy_owner_links(
     links = []
     df = providers.dropna(subset=["owner_name"]).copy()
     df["_norm_owner"] = df["owner_name"].apply(normalize_name)
+    df["_clean_owner"] = df["owner_name"].apply(lambda n: normalize_name(n, strip_corp=True))
     df = df.dropna(subset=["_norm_owner"])
     df = df[df["_norm_owner"] != ""]
 
@@ -215,10 +280,11 @@ def _find_fuzzy_owner_links(
 
     pids = df["provider_id"].values
     owners = df["_norm_owner"].values
+    clean_owners = df["_clean_owner"].values
 
     for i in range(len(pids)):
         for j in range(i + 1, len(pids)):
-            if owners[i] == owners[j]:
+            if owners[i] == owners[j] or (clean_owners[i] and clean_owners[i] == clean_owners[j]):
                 # Exact match after normalization
                 links.append(IdentityLink(
                     source_type="provider", source_id=pids[i],
@@ -230,6 +296,8 @@ def _find_fuzzy_owner_links(
                 ))
             else:
                 score = fuzz.token_set_ratio(owners[i], owners[j])
+                if score < threshold and clean_owners[i] and clean_owners[j]:
+                    score = fuzz.token_set_ratio(clean_owners[i], clean_owners[j])
                 if score >= threshold:
                     links.append(IdentityLink(
                         source_type="provider", source_id=pids[i],
@@ -292,6 +360,7 @@ def resolve_entities(
 
     link_weights = config.get("link_weights", {})
     fuzzy_threshold = config.get("fuzzy_threshold", 88)
+    mob_threshold = config.get("mob_threshold", 5)
 
     all_links: List[IdentityLink] = []
 
@@ -307,9 +376,9 @@ def resolve_entities(
             providers, "tin_hash", "tin_hash",
             link_weights.get("tin_hash", 1.0)))
 
-    # 3. Address matching (suite-level and address-level)
+    # 3. Address matching (suite-level and address-level with MOB handling)
     if "address" in providers.columns:
-        all_links.extend(_find_address_links(providers, link_weights))
+        all_links.extend(_find_address_links(providers, link_weights, mob_threshold=mob_threshold))
 
     # 4. Fuzzy owner matching
     if "owner_name" in providers.columns:
