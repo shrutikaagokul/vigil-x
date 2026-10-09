@@ -28,15 +28,15 @@ export const CaseHeader: React.FC<CaseHeaderProps> = ({ caseItem }) => {
     <header className="bg-surface border border-border p-5 sm:p-6 space-y-4">
       {/* Top Meta Bar: Breadcrumb + Mandatory Human Investigation Notice */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border pb-3">
-        <div className="flex items-center gap-2 text-xs font-sans">
+        <div className="flex items-center gap-2 text-sm font-sans">
           <Link
             to="/queue"
-            className="text-green-800 hover:text-green-950 font-semibold flex items-center gap-1 hover:underline"
+            className="text-green-800 hover:text-green-950 font-semibold hover:underline"
           >
-            ← Queue
+            Queue
           </Link>
           <span className="text-border-strong">/</span>
-          <span className="font-mono text-ink-subtle text-xs">
+          <span className="font-mono text-ink-subtle text-sm">
             {caseItem.id}
           </span>
         </div>

@@ -1,4 +1,10 @@
-export * from './DashboardMetrics';
-export * from './DashboardPriorityQueue';
-export * from './DashboardWhyNexus';
-export * from './DashboardPosture';
+export { DashboardMetrics } from './DashboardMetrics';
+export { DashboardPriorityQueue } from './DashboardPriorityQueue';
+export { DashboardWhyNexus } from './DashboardWhyNexus';
+export { DashboardPosture } from './DashboardPosture';
+export { DashboardTopInvestigation } from './DashboardTopInvestigation';
+export { DashboardDetectionIntelligence } from './DashboardDetectionIntelligence';
+export { DashboardRuleActivity } from './DashboardRuleActivity';
+export { DashboardNetworkOverview } from './DashboardNetworkOverview';
+export { DashboardEvaluationPreview } from './DashboardEvaluationPreview';
+export { DashboardRiskDistribution } from './DashboardRiskDistribution';

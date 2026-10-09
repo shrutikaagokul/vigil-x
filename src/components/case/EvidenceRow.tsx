@@ -126,9 +126,9 @@ export const EvidenceRow: React.FC<EvidenceRowProps> = ({
                 onSelectClaim(cid);
               }}
               title={`Trace claim ${cid}`}
-              className="px-2 py-0.5 text-[11px] font-mono bg-green-50 hover:bg-green-100 text-green-900 border border-green-300 font-semibold"
+              className="px-2.5 py-1 text-xs font-mono bg-green-50 hover:bg-green-100 text-green-900 border border-green-300 font-semibold rounded"
             >
-              {cid} →
+              {cid}
             </button>
           ))}
         </div>

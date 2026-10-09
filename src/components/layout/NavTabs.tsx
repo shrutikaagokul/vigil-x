@@ -18,7 +18,7 @@ export const NavTabs: React.FC = () => {
   const location = useLocation();
 
   return (
-    <nav className="flex items-center h-full space-x-6" aria-label="Main Navigation">
+    <nav className="flex items-center h-full space-x-8" aria-label="Main Navigation">
       {NAV_ITEMS.map((item) => {
         const isNetworkTab = item.label === 'Networks';
         const isActive = item.exact
@@ -33,16 +33,16 @@ export const NavTabs: React.FC = () => {
             to={item.to}
             end={item.exact}
             aria-current={isActive ? 'page' : undefined}
-            className={`relative h-full flex items-center text-[1rem] font-medium tracking-normal transition-colors outline-none focus-visible:outline-2 focus-visible:outline-[#A9CFB0] ${
+            className={`relative h-full flex items-center text-[15px] font-medium tracking-normal transition-colors outline-none focus-visible:ring-2 focus-visible:ring-[#477A58] ${
               isActive
-                ? 'text-white'
-                : 'text-[#A9CFB0] hover:text-white'
+                ? 'text-[#285239] font-semibold'
+                : 'text-[#68766B] hover:text-[#24352A]'
             }`}
           >
             {item.label}
             {isActive && (
               <span
-                className="absolute bottom-0 left-0 right-0 h-[3px] bg-[#A9CFB0]"
+                className="absolute bottom-0 left-0 right-0 h-[3px] bg-[#477A58] rounded-t-sm"
                 aria-hidden="true"
               />
             )}

@@ -44,16 +44,16 @@ export const CapacityRow: React.FC<CapacityRowProps> = ({
   const hasActiveFilters = Boolean(selectedSeverity || selectedRule);
 
   return (
-    <div className="w-full mt-[1.25rem] px-[3rem]">
-      <div className="py-[0.875rem] border-t border-b border-[#D3E0D6] flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+    <div className="w-full mt-4 px-6 md:px-8">
+      <div className="py-4 border-t border-b border-[#E0E8DF] flex flex-col lg:flex-row lg:items-center justify-between gap-5">
         {/* Left Side: Generalist & Network Specialist Sliders */}
-        <div className="flex flex-wrap items-center gap-8">
+        <div className="flex flex-wrap items-center gap-10">
           {/* Generalist Slider */}
-          <div className="flex items-center space-x-3">
-            <span className="text-[0.9375rem] text-[#4F5F55] font-normal">
+          <div className="flex items-center space-x-3.5">
+            <span className="text-sm text-[#68766B] font-medium">
               Generalist
             </span>
-            <span className="text-[0.9375rem] font-bold text-[#1B3A29] tabular-nums min-w-[36px]">
+            <span className="text-sm font-bold text-[#285239] tabular-nums min-w-[42px]">
               {generalHours} h
             </span>
             <Slider.Root
@@ -62,25 +62,25 @@ export const CapacityRow: React.FC<CapacityRowProps> = ({
               max={120}
               step={5}
               onValueChange={([val]) => onGeneralHoursChange(val)}
-              className="relative flex items-center select-none touch-none w-[170px] h-4 cursor-pointer"
+              className="relative flex items-center select-none touch-none w-[180px] h-5 cursor-pointer"
               aria-label="Generalist capacity in hours"
             >
-              <Slider.Track className="bg-[#D3E0D6] relative grow rounded-full h-[4px]">
-                <Slider.Range className="absolute bg-[#2A5A3F] rounded-full h-full" />
+              <Slider.Track className="bg-[#E0E8DF] relative grow rounded-full h-[6px]">
+                <Slider.Range className="absolute bg-[#477A58] rounded-full h-full" />
               </Slider.Track>
               <Slider.Thumb
-                className="block w-4 h-4 bg-[#2A5A3F] rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2A5A3F] focus-visible:ring-offset-2"
+                className="block w-5 h-5 bg-[#477A58] border-2 border-white rounded-full shadow-xs focus:outline-none focus-visible:ring-2 focus-visible:ring-[#477A58]"
                 aria-label="Generalist hours thumb"
               />
             </Slider.Root>
           </div>
 
           {/* Network Specialist Slider */}
-          <div className="flex items-center space-x-3">
-            <span className="text-[0.9375rem] text-[#4F5F55] font-normal">
+          <div className="flex items-center space-x-3.5">
+            <span className="text-sm text-[#68766B] font-medium">
               Network specialist
             </span>
-            <span className="text-[0.9375rem] font-bold text-[#1B3A29] tabular-nums min-w-[36px]">
+            <span className="text-sm font-bold text-[#0369A1] tabular-nums min-w-[42px]">
               {networkHours} h
             </span>
             <Slider.Root
@@ -89,14 +89,14 @@ export const CapacityRow: React.FC<CapacityRowProps> = ({
               max={80}
               step={5}
               onValueChange={([val]) => onNetworkHoursChange(val)}
-              className="relative flex items-center select-none touch-none w-[170px] h-4 cursor-pointer"
+              className="relative flex items-center select-none touch-none w-[180px] h-5 cursor-pointer"
               aria-label="Network specialist capacity in hours"
             >
-              <Slider.Track className="bg-[#D3E0D6] relative grow rounded-full h-[4px]">
-                <Slider.Range className="absolute bg-[#2A5A3F] rounded-full h-full" />
+              <Slider.Track className="bg-[#E0E8DF] relative grow rounded-full h-[6px]">
+                <Slider.Range className="absolute bg-[#0369A1] rounded-full h-full" />
               </Slider.Track>
               <Slider.Thumb
-                className="block w-4 h-4 bg-[#2A5A3F] rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2A5A3F] focus-visible:ring-offset-2"
+                className="block w-5 h-5 bg-[#0369A1] border-2 border-white rounded-full shadow-xs focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0369A1]"
                 aria-label="Network specialist hours thumb"
               />
             </Slider.Root>
@@ -104,25 +104,25 @@ export const CapacityRow: React.FC<CapacityRowProps> = ({
         </div>
 
         {/* Right Side: Search Input and Filters Popover */}
-        <div className="flex items-center space-x-3 shrink-0">
-          <div className="relative w-[240px]">
+        <div className="flex items-center space-x-3.5 shrink-0">
+          <div className="relative w-[280px]">
             <input
               ref={searchInputRef}
               type="text"
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
-              placeholder="Search cases"
-              className="w-full h-[36px] px-3 text-[0.9375rem] bg-white border border-[#D3E0D6] rounded-[3px] text-[#14201A] placeholder-[#8A969C] outline-none focus:border-[#2A5A3F] focus-visible:ring-2 focus-visible:ring-[#2A5A3F]"
+              placeholder="Search cases..."
+              className="w-full h-11 px-4 text-sm bg-white border border-[#E0E8DF] rounded-lg text-[#183B2A] placeholder-[#68766B] outline-none focus:border-[#477A58] focus-visible:ring-2 focus-visible:ring-[#477A58] shadow-xs"
               aria-label="Search cases"
             />
             {searchQuery && (
               <button
                 type="button"
                 onClick={() => onSearchChange('')}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[0.875rem] text-[#8A969C] hover:text-[#14201A]"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-[#68766B] hover:text-[#183B2A] px-1.5 py-0.5 rounded bg-[#F5F8F4]"
                 aria-label="Clear search"
               >
-                ×
+                Clear
               </button>
             )}
           </div>
@@ -131,44 +131,42 @@ export const CapacityRow: React.FC<CapacityRowProps> = ({
             <Popover.Trigger asChild>
               <button
                 type="button"
-                className={`h-[36px] px-4 text-[0.9375rem] font-semibold rounded-[3px] border border-[#2A5A3F] transition-colors outline-none focus-visible:ring-2 focus-visible:ring-[#2A5A3F] focus-visible:ring-offset-2 ${
+                className={`h-11 px-5 text-sm font-semibold rounded-lg border transition-colors outline-none focus-visible:ring-2 focus-visible:ring-[#477A58] shadow-xs ${
                   hasActiveFilters
-                    ? 'bg-[#2A5A3F] text-white'
-                    : 'bg-transparent text-[#2A5A3F] hover:bg-[#E3EFE5]'
+                    ? 'bg-[#477A58] text-white border-[#477A58]'
+                    : 'bg-white border-[#E0E8DF] text-[#68766B] hover:bg-[#F5F8F4] hover:text-[#183B2A]'
                 }`}
                 aria-label="Filter queue cases"
               >
-                Filters {hasActiveFilters && '●'}
+                Filter {hasActiveFilters ? '(Active)' : ''}
               </button>
             </Popover.Trigger>
             <Popover.Portal>
               <Popover.Content
-                className="w-72 bg-white border border-[#D3E0D6] p-4 rounded-[3px] shadow-none z-50 space-y-3 focus:outline-none"
-                sideOffset={5}
+                className="w-80 bg-white border border-[#E0E8DF] rounded-xl p-5 text-sm shadow-xl z-50 space-y-4"
+                sideOffset={6}
                 align="end"
               >
-                <div className="flex items-center justify-between border-b border-[#D3E0D6] pb-2">
-                  <span className="text-[0.875rem] font-semibold text-[#0B1A12]">Filter Cases</span>
+                <div className="flex items-center justify-between border-b border-[#E0E8DF] pb-2.5">
+                  <span className="font-semibold text-base text-[#183B2A]">Filter Cases</span>
                   {hasActiveFilters && (
                     <button
                       type="button"
                       onClick={onClearFilters}
-                      className="text-[0.75rem] text-[#9E3626] hover:underline"
+                      className="text-xs text-[#285239] hover:underline font-semibold"
                     >
-                      Reset
+                      Reset all
                     </button>
                   )}
                 </div>
 
-                <div className="space-y-1">
-                  <label htmlFor="filter-severity" className="text-[0.8125rem] font-medium text-[#4F5F55] block">
-                    Severity
-                  </label>
+                {/* Severity Filter */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-mono text-[#68766B] uppercase font-semibold">Severity</label>
                   <select
-                    id="filter-severity"
                     value={selectedSeverity}
                     onChange={(e) => onSeverityChange(e.target.value)}
-                    className="w-full h-8 px-2 text-[0.875rem] bg-white border border-[#D3E0D6] rounded-[3px] text-[#14201A] outline-none focus:border-[#2A5A3F]"
+                    className="w-full bg-[#F5F8F4] border border-[#E0E8DF] rounded-lg p-2.5 text-sm text-[#183B2A] focus:outline-none focus:border-[#477A58]"
                   >
                     {severities.map((s) => (
                       <option key={s.value} value={s.value}>
@@ -178,20 +176,18 @@ export const CapacityRow: React.FC<CapacityRowProps> = ({
                   </select>
                 </div>
 
-                <div className="space-y-1">
-                  <label htmlFor="filter-rule" className="text-[0.8125rem] font-medium text-[#4F5F55] block">
-                    Triggered Rule
-                  </label>
+                {/* Rule Filter */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-mono text-[#68766B] uppercase font-semibold">Triggered Rule</label>
                   <select
-                    id="filter-rule"
                     value={selectedRule}
                     onChange={(e) => onRuleChange(e.target.value)}
-                    className="w-full h-8 px-2 text-[0.875rem] bg-white border border-[#D3E0D6] rounded-[3px] text-[#14201A] outline-none focus:border-[#2A5A3F]"
+                    className="w-full bg-[#F5F8F4] border border-[#E0E8DF] rounded-lg p-2.5 text-sm text-[#183B2A] focus:outline-none focus:border-[#477A58]"
                   >
                     <option value="">All Rules</option>
-                    {availableRules.map((rule) => (
-                      <option key={rule} value={rule}>
-                        {rule}
+                    {availableRules.map((r) => (
+                      <option key={r} value={r}>
+                        {r}
                       </option>
                     ))}
                   </select>

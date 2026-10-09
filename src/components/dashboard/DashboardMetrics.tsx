@@ -11,7 +11,7 @@ interface DashboardMetricsProps {
 export const DashboardMetrics: React.FC<DashboardMetricsProps> = ({ queueData, summary }) => {
   const items = queueData?.items || [];
 
-  // Total exposure calculated from active queue items (exposure_high or est_dollars)
+  // Total exposure calculated from active queue items
   const totalExposure = items.reduce((acc, item) => acc + (item.exposure_high || item.est_dollars || 0), 0);
   const formattedExposure = formatCurrency(totalExposure > 0 ? totalExposure : (summary?.total_exposure_dollars || 0), 'compact');
 
@@ -19,76 +19,105 @@ export const DashboardMetrics: React.FC<DashboardMetricsProps> = ({ queueData, s
   const addressableCases = queueData?.capacity_summary?.estimated_cases_addressable || Math.min(items.length, 5);
   const totalCapacityHours = queueData?.capacity_summary?.total_hours || 60;
 
-  // Calculate top case lift: hero case baseline rank (e.g. 38) vs Nexus rank (1)
+  // Top case lift
   const heroItem = items.find((i) => i.case_id === 'CASE-2024-0042') || items[0];
   const baselineRank = heroItem?.baseline_rank || 38;
   const rankLift = baselineRank - 1; // e.g. 37 ranks
 
+  const activeAlerts = summary?.active_alerts_count || 176;
+
   return (
     <div
       data-testid="dashboard-metrics"
-      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full"
+      className="bg-white border border-[#E0E8DF] rounded-xl p-8 space-y-6 shadow-xs"
     >
-      {/* 1. Cases Requiring Investigation */}
-      <div className="bg-white border border-[#D3E0D6] rounded-[3px] p-4 flex flex-col justify-between">
-        <span className="text-sm font-medium text-[#4F5F55]">
-          Cases Requiring Investigation
-        </span>
-        <div className="mt-2">
-          <span className="font-serif text-[2rem] leading-[2.25rem] font-semibold text-[#0B1A12]">
-            {totalCases}
-          </span>
-          <span className="text-[0.875rem] text-[#4F5F55] ml-2">active cases</span>
+      <div className="border-b border-[#E0E8DF] pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div>
+          <h2 className="text-2xl font-bold text-[#183B2A] tracking-tight font-serif">
+            Queue Workload and Exposure Summary
+          </h2>
+          <p className="text-base text-[#68766B] mt-1">
+            Investigator capacity alignment, financial exposure, and Nexus graph prioritization lift.
+          </p>
         </div>
-        <p className="text-sm text-[#4F5F55] mt-1">
-          {summary?.active_alerts_count || 24} correlated risk alerts across providers
-        </p>
+        <span className="text-xs font-mono font-semibold px-3 py-1 rounded bg-[#E8F2E8] text-[#285239] border border-[#B8D2B8] self-start sm:self-auto">
+          Active SIU Budget: {totalCapacityHours} Hours
+        </span>
       </div>
 
-      {/* 2. Exposure in Queue */}
-      <div className="bg-white border border-[#D3E0D6] rounded-[3px] p-4 flex flex-col justify-between">
-        <span className="text-sm font-medium text-[#4F5F55]">
-          Exposure in Queue
-        </span>
-        <div className="mt-2">
-          <span className="font-serif text-[2rem] leading-[2.25rem] font-semibold text-[#1B3A29] tabular-nums">
-            {formattedExposure}
-          </span>
-        </div>
-        <p className="text-sm text-[#4F5F55] mt-1">
-          Combined financial exposure across prioritized queue
-        </p>
-      </div>
+      {/* Readable Structured Summary Table - No KPI cards */}
+      <div className="overflow-x-auto">
+        <table className="w-full text-left border-collapse text-base">
+          <thead>
+            <tr className="border-b border-[#E0E8DF] text-xs font-mono uppercase text-[#68766B] bg-[#F5F8F4]">
+              <th className="py-3.5 px-5 font-semibold">Investigation Metric</th>
+              <th className="py-3.5 px-5 font-semibold">Assessed Value</th>
+              <th className="py-3.5 px-5 font-semibold">Scope and Calibration</th>
+              <th className="py-3.5 px-5 font-semibold">Investigative Context</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-[#E0E8DF] text-[#24352A]">
+            <tr className="hover:bg-[#F5F8F4] transition-colors">
+              <td className="py-4 px-5 font-semibold text-[#183B2A]">
+                Cases Requiring Investigation
+              </td>
+              <td className="py-4 px-5 font-serif font-bold text-xl text-[#183B2A] tabular-nums">
+                {totalCases} cases
+              </td>
+              <td className="py-4 px-5 text-sm text-[#68766B] font-mono">
+                {activeAlerts} active alerts across providers
+              </td>
+              <td className="py-4 px-5 text-sm text-[#68766B]">
+                Synthesized dossiers prioritized from multi-rule violations and network entity clusters.
+              </td>
+            </tr>
 
-      {/* 3. Cases Fitting Current Capacity */}
-      <div className="bg-white border border-[#D3E0D6] rounded-[3px] p-4 flex flex-col justify-between">
-        <span className="text-sm font-medium text-[#4F5F55]">
-          Addressable This Week
-        </span>
-        <div className="mt-2">
-          <span className="font-serif text-[2rem] leading-[2.25rem] font-semibold text-[#2A5A3F] tabular-nums">
-            {addressableCases} of {totalCases}
-          </span>
-          <span className="text-[0.875rem] text-[#4F5F55] ml-2">cases</span>
-        </div>
-        <p className="text-sm text-[#4F5F55] mt-1">
-          Fit within {totalCapacityHours} h allocated capacity budget
-        </p>
-      </div>
+            <tr className="hover:bg-[#F5F8F4] transition-colors">
+              <td className="py-4 px-5 font-semibold text-[#183B2A]">
+                Exposure in Queue
+              </td>
+              <td className="py-4 px-5 font-serif font-bold text-xl text-[#285239] tabular-nums">
+                {formattedExposure}
+              </td>
+              <td className="py-4 px-5 text-sm text-[#68766B] font-mono">
+                Identified potential overpayment
+              </td>
+              <td className="py-4 px-5 text-sm text-[#68766B]">
+                Combined financial exposure across prioritized queue under current lookback window.
+              </td>
+            </tr>
 
-      {/* 4. Nexus Lift over Rules-Only */}
-      <div className="bg-white border border-[#D3E0D6] rounded-[3px] p-4 flex flex-col justify-between">
-        <span className="text-sm font-medium text-[#4F5F55]">
-          Nexus Prioritization Lift
-        </span>
-        <div className="mt-2">
-          <span className="font-serif text-[2rem] leading-[2.25rem] font-semibold text-[#701F14] tabular-nums">
-            +{rankLift} ranks
-          </span>
-        </div>
-        <p className="text-sm text-[#4F5F55] mt-1">
-          Hero multi-entity ring elevated from #{baselineRank} to #1
-        </p>
+            <tr className="hover:bg-[#F5F8F4] transition-colors">
+              <td className="py-4 px-5 font-semibold text-[#183B2A]">
+                Addressable This Week
+              </td>
+              <td className="py-4 px-5 font-serif font-bold text-xl text-[#183B2A] tabular-nums">
+                {addressableCases} of {totalCases} cases
+              </td>
+              <td className="py-4 px-5 text-sm text-[#68766B] font-mono">
+                {totalCapacityHours} hours weekly capacity
+              </td>
+              <td className="py-4 px-5 text-sm text-[#68766B]">
+                Optimal high-yield investigations fitting within allocated generalist and specialist hours.
+              </td>
+            </tr>
+
+            <tr className="hover:bg-[#F5F8F4] transition-colors">
+              <td className="py-4 px-5 font-semibold text-[#183B2A]">
+                Nexus Prioritization Lift
+              </td>
+              <td className="py-4 px-5 font-serif font-bold text-xl text-[#285239] tabular-nums">
+                +{rankLift} ranks
+              </td>
+              <td className="py-4 px-5 text-sm text-[#68766B] font-mono">
+                Elevated from #{baselineRank} to #1
+              </td>
+              <td className="py-4 px-5 text-sm text-[#68766B]">
+                Multi-entity collusion ring prioritized ahead of isolated single-provider rule flags.
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
   );

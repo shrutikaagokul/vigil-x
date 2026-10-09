@@ -25,70 +25,67 @@ export const DashboardPosture: React.FC<DashboardPostureProps> = ({ summary, que
   return (
     <div
       data-testid="dashboard-posture"
-      className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full"
+      className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full"
     >
       {/* 1. Queue Severity Distribution */}
-      <div className="bg-white border border-[#D3E0D6] rounded-[3px] p-5 space-y-3">
-        <div className="border-b border-[#D3E0D6] pb-2">
-          <h3 className="font-serif text-[1.125rem] font-semibold text-[#0B1A12]">
+      <div className="bg-white border border-[#E0E8DF] rounded-xl p-8 space-y-5 shadow-xs">
+        <div className="border-b border-[#E0E8DF] pb-3">
+          <h3 className="font-serif text-xl font-bold text-[#183B2A]">
             Queue Severity Breakdown
           </h3>
-          <p className="text-sm text-[#4F5F55]">
+          <p className="text-sm text-[#68766B] mt-1">
             Distribution of prioritized cases across triage severity tiers.
           </p>
         </div>
 
-        <div className="space-y-2 text-[0.875rem]">
-          <div className="flex items-center justify-between p-2.5 bg-[#F3F8F4] border border-[#D3E0D6] rounded-[2px]">
-            <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-[#701F14]" />
-              <span className="font-semibold text-[#14201A]">Critical Severity</span>
-            </div>
-            <strong className="font-mono text-[#701F14]">{criticalCount} case</strong>
+        <div className="space-y-3 text-base">
+          <div className="flex items-center justify-between p-4 bg-[#F5F8F4] border border-[#E0E8DF] rounded-lg">
+            <span className="font-semibold text-[#183B2A]">Critical Severity</span>
+            <strong className="font-mono text-sm text-[#B91C1C] bg-[#FEE2E2] px-3 py-1 rounded border border-[#FCA5A5]">
+              {criticalCount} case
+            </strong>
           </div>
 
-          <div className="flex items-center justify-between p-2.5 bg-[#F3F8F4] border border-[#D3E0D6] rounded-[2px]">
-            <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-[#9E3626]" />
-              <span className="font-semibold text-[#14201A]">High Severity</span>
-            </div>
-            <strong className="font-mono text-[#9E3626]">{highCount} cases</strong>
+          <div className="flex items-center justify-between p-4 bg-[#F5F8F4] border border-[#E0E8DF] rounded-lg">
+            <span className="font-semibold text-[#183B2A]">High Severity</span>
+            <strong className="font-mono text-sm text-[#B45309] bg-[#FEF3C7] px-3 py-1 rounded border border-[#FCD34D]">
+              {highCount} cases
+            </strong>
           </div>
 
-          <div className="flex items-center justify-between p-2.5 bg-[#F3F8F4] border border-[#D3E0D6] rounded-[2px]">
-            <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-[#B38A2E]" />
-              <span className="font-semibold text-[#14201A]">Medium Severity</span>
-            </div>
-            <strong className="font-mono text-[#B38A2E]">{mediumCount} cases</strong>
+          <div className="flex items-center justify-between p-4 bg-[#F5F8F4] border border-[#E0E8DF] rounded-lg">
+            <span className="font-semibold text-[#183B2A]">Medium Severity</span>
+            <strong className="font-mono text-sm text-[#0369A1] bg-[#E0F2FE] px-3 py-1 rounded border border-[#BAE6FD]">
+              {mediumCount} cases
+            </strong>
           </div>
         </div>
       </div>
 
       {/* 2. Top Risk Rule Categories */}
-      <div className="bg-white border border-[#D3E0D6] rounded-[3px] p-5 space-y-3">
-        <div className="border-b border-[#D3E0D6] pb-2">
-          <h3 className="font-serif text-[1.125rem] font-semibold text-[#0B1A12]">
+      <div className="bg-white border border-[#E0E8DF] rounded-xl p-8 space-y-5 shadow-xs">
+        <div className="border-b border-[#E0E8DF] pb-3">
+          <h3 className="font-serif text-xl font-bold text-[#183B2A]">
             Top Risk Pattern Categories
           </h3>
-          <p className="text-sm text-[#4F5F55]">
+          <p className="text-sm text-[#68766B] mt-1">
             Active signal clusters identified across provider network data.
           </p>
         </div>
 
-        <div className="space-y-2 text-sm">
+        <div className="space-y-3 text-base">
           {topCategories.map((cat, idx) => (
             <div
               key={idx}
-              className="flex items-center justify-between p-2 bg-[#F3F8F4] border border-[#D3E0D6] rounded-[2px]"
+              className="flex items-center justify-between p-4 bg-[#F5F8F4] border border-[#E0E8DF] rounded-lg hover:border-[#B8D2B8] transition-colors"
             >
-              <div className="flex items-center gap-2">
-                <span className="font-mono text-[0.75rem] bg-white px-1.5 py-0.5 border border-[#D3E0D6] text-[#1B3A29] rounded-[2px]">
+              <div className="flex items-center gap-3">
+                <span className="font-mono text-xs bg-white px-2.5 py-1 border border-[#E0E8DF] text-[#285239] rounded font-bold">
                   {cat.rule_id}
                 </span>
-                <span className="text-[#14201A] font-medium">{cat.category}</span>
+                <span className="text-[#183B2A] font-semibold">{cat.category}</span>
               </div>
-              <span className="font-mono text-[#4F5F55] font-semibold">{cat.count} alerts</span>
+              <span className="font-mono text-[#68766B] text-sm font-semibold">{cat.count} alerts</span>
             </div>
           ))}
         </div>

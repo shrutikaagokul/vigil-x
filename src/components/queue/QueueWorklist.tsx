@@ -37,20 +37,20 @@ export const QueueWorklist: React.FC<QueueWorklistProps> = ({
   };
 
   return (
-    <div className="flex-1 min-w-0" role="region" aria-label="Investigation Worklist">
+    <div className="flex-1 min-w-0 bg-white border border-[#E0E8DF] rounded-xl overflow-hidden shadow-xs" role="region" aria-label="Investigation Worklist">
       {/* 6 Column Header Table */}
       <table className="w-full border-collapse text-left" role="table">
         <thead>
-          <tr className="border-b-2 border-[#12291C] text-[0.875rem] font-medium text-[#4F5F55] pb-2">
-            <th className="py-2 px-3 w-[56px] font-medium text-left">Rank</th>
-            <th className="py-2 px-3 font-medium text-left">Case</th>
-            <th className="py-2 px-3 w-[90px] font-medium text-left">Risk</th>
-            <th className="py-2 px-3 w-[190px] font-medium text-left">Exposure</th>
-            <th className="py-2 px-3 w-[80px] font-medium text-left">Effort</th>
-            <th className="py-2 px-3 w-[120px] font-medium text-left">Rules-only</th>
+          <tr className="border-b border-[#E0E8DF] bg-[#F5F8F4] text-[0.875rem] font-medium text-[#68766B]">
+            <th className="py-3 px-4 w-[64px] font-medium text-left">Rank</th>
+            <th className="py-3 px-4 font-medium text-left">Case</th>
+            <th className="py-3 px-4 w-[96px] font-medium text-left">Risk</th>
+            <th className="py-3 px-4 w-[200px] font-medium text-left">Exposure</th>
+            <th className="py-3 px-4 w-[84px] font-medium text-left">Effort</th>
+            <th className="py-3 px-4 w-[130px] font-medium text-left">Rules-only</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-[#D3E0D6]">
+        <tbody className="divide-y divide-[#E0E8DF]">
           <AnimatePresence initial={false}>
             {items.map((item, index) => {
               const rank = index + 1;
@@ -68,15 +68,15 @@ export const QueueWorklist: React.FC<QueueWorklistProps> = ({
                     <tr
                       key="capacity-boundary-line"
                       data-testid="capacity-boundary-line"
-                      className="h-[46px]"
+                      className="h-[46px] bg-[#FEF3C7]/40"
                     >
                       <td colSpan={6} className="py-2 px-0 select-none">
                         <div className="flex items-center justify-center w-full">
-                          <div className="flex-1 border-t-2 border-dashed border-[#B38A2E]" />
-                          <span className="px-4 text-[0.875rem] font-semibold text-[#701F14] whitespace-nowrap">
+                          <div className="flex-1 border-t-2 border-dashed border-[#B45309]/50" />
+                          <span className="px-4 text-[0.8125rem] font-semibold text-[#B45309] uppercase tracking-wider whitespace-nowrap">
                             Capacity reached · {usedHours} of {allocatedHours} h
                           </span>
-                          <div className="flex-1 border-t-2 border-dashed border-[#B38A2E]" />
+                          <div className="flex-1 border-t-2 border-dashed border-[#B45309]/50" />
                         </div>
                       </td>
                     </tr>
@@ -97,35 +97,35 @@ export const QueueWorklist: React.FC<QueueWorklistProps> = ({
                         onSelectCase(item.case_id);
                       }
                     }}
-                    className={`cursor-pointer transition-colors outline-none focus-visible:ring-2 focus-visible:ring-[#2A5A3F] focus-visible:ring-offset-2 ${
+                    className={`cursor-pointer transition-colors outline-none focus-visible:ring-2 focus-visible:ring-[#477A58] focus-visible:ring-offset-2 focus-visible:ring-offset-white ${
                       isDeferred ? 'min-h-[64px] h-[68px]' : 'min-h-[72px] h-[76px]'
                     } ${
                       isSelected
-                        ? 'bg-[#E3EFE5]'
+                        ? 'bg-[#E8F2E8] border-l-4 border-l-[#477A58]'
                         : isDeferred
-                        ? 'bg-[#F3F8F4] hover:bg-[#EAEFEA]'
-                        : 'bg-[#F3F8F4] hover:bg-[#E8EFE8]'
+                        ? 'bg-white/80 hover:bg-[#F5F8F4]'
+                        : 'bg-white hover:bg-[#F5F8F4]'
                     }`}
                   >
                     {/* 1. Rank */}
-                    <td className="py-3 px-3 align-middle w-[56px]">
-                      <span className="font-serif text-[1.875rem] leading-none font-semibold text-[#1B3A29]">
+                    <td className="py-3 px-4 align-middle w-[64px]">
+                      <span className={`font-mono text-[1.5rem] leading-none font-bold ${isSelected ? 'text-[#183B2A]' : 'text-[#285239]'}`}>
                         {rank}
                       </span>
                     </td>
 
                     {/* 2. Case Name & Subtitle */}
-                    <td className="py-3 px-3 align-middle min-w-[200px]">
+                    <td className="py-3 px-4 align-middle min-w-[200px]">
                       <div className="flex flex-col justify-center">
-                        <span className="text-[1.1875rem] font-semibold text-[#14201A] leading-snug">
+                        <span className="text-[1.0625rem] font-semibold text-[#183B2A] leading-snug">
                           {displayName}
                         </span>
                         {isDeferred ? (
-                          <span className="text-[0.9375rem] text-[#9E3626] font-normal leading-normal mt-0.5">
+                          <span className="text-[0.875rem] text-[#B91C1C] font-normal leading-normal mt-0.5">
                             Waiting 4 weeks puts about {formatCurrency(item.cost_of_delay_4w, 'compact')} more at risk
                           </span>
                         ) : (
-                          <span className="text-[0.9375rem] text-[#4F5F55] font-normal leading-normal mt-0.5">
+                          <span className="text-[0.875rem] text-[#68766B] font-normal leading-normal mt-0.5">
                             {displaySubtitle}
                           </span>
                         )}
@@ -133,39 +133,39 @@ export const QueueWorklist: React.FC<QueueWorklistProps> = ({
                     </td>
 
                     {/* 3. Risk */}
-                    <td className="py-3 px-3 align-middle w-[90px]">
+                    <td className="py-3 px-4 align-middle w-[96px]">
                       <div className="flex items-center space-x-2">
                         <span
                           className="inline-block w-[10px] h-[10px] rounded-full shrink-0"
                           style={{ backgroundColor: getSeverityDotColor(item.severity) }}
                           aria-hidden="true"
                         />
-                        <span className="text-[1.25rem] font-semibold text-[#14201A] tabular-nums">
+                        <span className="text-[1.125rem] font-semibold text-[#183B2A] tabular-nums">
                           {item.risk_index}
                         </span>
                       </div>
                     </td>
 
                     {/* 4. Exposure */}
-                    <td className="py-3 px-3 align-middle w-[190px]">
-                      <span className="text-[1.125rem] font-semibold text-[#14201A] tabular-nums whitespace-nowrap">
+                    <td className="py-3 px-4 align-middle w-[200px]">
+                      <span className="text-[1.0625rem] font-semibold text-[#183B2A] tabular-nums whitespace-nowrap">
                         {formatExposureRange(item.exposure_low, item.exposure_high)}
                       </span>
                     </td>
 
                     {/* 5. Effort */}
-                    <td className="py-3 px-3 align-middle w-[80px]">
-                      <span className="text-[1.0625rem] text-[#14201A] font-normal tabular-nums">
+                    <td className="py-3 px-4 align-middle w-[84px]">
+                      <span className="text-[0.9375rem] text-[#24352A] font-normal tabular-nums">
                         {item.effort_hours} h
                       </span>
                     </td>
 
                     {/* 6. Rules-only Rank Delta */}
-                    <td className="py-3 px-3 align-middle w-[120px]">
-                      <span className="text-[1.0625rem] text-[#4F5F55] tabular-nums">
+                    <td className="py-4 px-5 align-middle w-[140px]">
+                      <span className="text-base text-[#68766B] tabular-nums">
                         #{item.baseline_rank}{' '}
-                        <span className="text-[#8A969C]">→</span>{' '}
-                        <strong className="font-bold text-[#1B3A29]">#{rank}</strong>
+                        <span className="text-[#68766B]">to</span>{' '}
+                        <strong className="font-bold text-[#285239]">#{rank}</strong>
                       </span>
                     </td>
                   </motion.tr>

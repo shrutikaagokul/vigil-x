@@ -16,57 +16,73 @@
    Source of truth for ClaimShield Nexus / Vigil-X visual system.
    ========================================================================== */
 :root {
-  /* Green Spectrum */
-  --g950: #0B1A12;
-  --g900: #12291C;
-  --g800: #1B3A29;
-  --g700: #2A5A3F;
-  --g500: #4C8C5E;
-  --g300: #A9CFB0;
-  --g100: #E3EFE5;
-  --g50: #F3F8F4;
+  /* Light Green to Forest Green Healthcare Palette */
+  --bg-main: #F5F8F4;
+  --bg-card: #FFFFFF;
+  --bg-elevated: #E8F2E8;
+  --bg-hover: #EDF5ED;
+  --sage-green: #B8D2B8;
+  --primary-green: #477A58;
+  --dark-green: #285239;
+  --deep-forest: #183B2A;
+  --text-primary: #24352A;
+  --text-secondary: #68766B;
+  --text-dim: #8B998E;
+  --border-color: #E0E8DF;
+  --border-subtle: #EDF2EC;
+  --border-highlight: #B8D2B8;
+  --warning-amber: #B45309;
+  --critical-red: #B91C1C;
 
-  /* Severity & Accents */
-  --brass: #B38A2E;
-  --brick: #9E3626;
-  --crit: #701F14;
+  /* Backward-compatible aliases for existing components */
+  --g950: #0E2419;
+  --g900: #183B2A;
+  --g800: #285239;
+  --g700: #356345;
+  --g600: #477A58;
+  --g500: #5C966F;
+  --g300: #B8D2B8;
+  --g100: #E8F2E8;
+  --g50: #F5F8F4;
 
-  /* Typography & Lines */
-  --ink: #14201A;
-  --ink-2: #4F5F55;
-  --line: #D3E0D6;
+  --brass: #B45309;
+  --brick: #B91C1C;
+  --crit: #DC2626;
 
-  /* Backwards-compatible aliases */
-  --color-paper: var(--g50);
-  --color-paper-subtle: var(--g100);
-  --color-surface: #ffffff;
-  --color-surface-raised: #f8fbf9;
-  --color-masthead: var(--g900);
-  --color-green-950: var(--g950);
-  --color-green-900: var(--g900);
-  --color-green-800: var(--g800);
-  --color-green-700: var(--g700);
-  --color-green-600: var(--g500);
-  --color-green-300: var(--g300);
-  --color-green-tint: var(--g100);
-  --color-text: var(--ink);
-  --color-text-muted: var(--ink-2);
-  --color-text-subtle: var(--ink-2);
-  --color-text-inverse: #ffffff;
-  --color-border: var(--line);
-  --color-border-strong: var(--g300);
-  --color-brass: var(--brass);
-  --color-brass-soft: #FAF4E6;
-  --color-brick: var(--brick);
-  --color-brick-soft: #FBF0EE;
-  --color-critical: var(--crit);
-  --color-critical-soft: #F9EBE9;
-  --color-steel: #8A969C;
+  --ink: #24352A;
+  --ink-2: #68766B;
+  --line: #E0E8DF;
+
+  --color-paper: #F5F8F4;
+  --color-paper-subtle: #FFFFFF;
+  --color-surface: #FFFFFF;
+  --color-surface-raised: #E8F2E8;
+  --color-masthead: #FFFFFF;
+  --color-green-950: #0E2419;
+  --color-green-900: #183B2A;
+  --color-green-800: #285239;
+  --color-green-700: #356345;
+  --color-green-600: #477A58;
+  --color-green-300: #B8D2B8;
+  --color-green-tint: #E8F2E8;
+  --color-text: #24352A;
+  --color-text-muted: #68766B;
+  --color-text-subtle: #8B998E;
+  --color-text-inverse: #FFFFFF;
+  --color-border: #E0E8DF;
+  --color-border-strong: #B8D2B8;
+  --color-brass: #B45309;
+  --color-brass-soft: #FEF3C7;
+  --color-brick: #B91C1C;
+  --color-brick-soft: #FEE2E2;
+  --color-critical: #DC2626;
+  --color-critical-soft: #FEE2E2;
+  --color-steel: #68766B;
 
   /* Typography Stacks */
-  --font-sans: 'Atkinson Hyperlegible Next', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  --font-serif: 'Source Serif 4', Georgia, Cambria, 'Times New Roman', Times, serif;
-  --font-mono: 'IBM Plex Mono', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+  --font-sans: 'Atkinson Hyperlegible Next', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-serif: 'Source Serif 4', Georgia, serif;
+  --font-mono: 'IBM Plex Mono', Menlo, Monaco, Consolas, monospace;
 }
 
 /* Base Styles */
@@ -76,23 +92,21 @@
 
 html {
   font-family: var(--font-sans);
-  font-size: clamp(16px, 0.5vw + 9px, 19px);
-  background-color: var(--g50);
-  color: var(--ink);
+  background-color: var(--bg-main);
+  color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
+  color-scheme: light;
 }
 
 body {
   margin: 0;
   padding: 0;
-  background-color: var(--g50);
-  color: var(--ink);
+  background-color: var(--bg-main);
+  color: var(--text-primary);
   min-height: 100vh;
-  min-width: 1200px;
-  font-size: 1rem;
-  line-height: 1.45;
+  font-size: 0.9375rem;
+  line-height: 1.5;
 }
 
 /* Interactive Elements & Focus States */
@@ -110,30 +124,46 @@ textarea:focus-visible,
 a:focus-visible,
 [role="row"]:focus-visible,
 [tabindex="0"]:focus-visible {
-  outline: 2px solid var(--g700);
+  outline: 2px solid var(--emerald-accent);
   outline-offset: 2px;
 }
 
 input, select, textarea {
   font-family: inherit;
-  color: var(--ink);
-  background-color: #ffffff;
-  border: 1px solid var(--line);
-  border-radius: 3px;
+  color: var(--text-primary);
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
   padding: 6px 10px;
 }
 
 input:hover, select:hover, textarea:hover {
-  border-color: var(--g700);
+  border-color: var(--primary-green);
 }
 
 a {
-  color: var(--g700);
+  color: var(--emerald-accent);
   text-decoration: none;
 }
 
 a:hover {
   text-decoration: underline;
+}
+
+/* Custom sleek dark scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #07110D;
+}
+::-webkit-scrollbar-thumb {
+  background: #203B2C;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #2A5A3F;
 }
 
 /* Tabular Numbers */

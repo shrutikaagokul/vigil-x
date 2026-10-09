@@ -54,13 +54,13 @@ export const NetworkPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <main className="w-full min-h-[calc(100vh-4rem)] flex flex-col items-center justify-center p-8 bg-[#F3F8F4]">
-        <div className="p-8 bg-white border border-[#D3E0D6] rounded-[3px] text-center max-w-md space-y-3">
-          <div className="w-8 h-8 border-2 border-[#2A5A3F] border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="font-serif text-[1.125rem] font-semibold text-[#0B1A12]">
+      <main className="w-full min-h-[calc(100vh-8rem)] flex flex-col items-center justify-center p-8 bg-[#F5F8F4]">
+        <div className="p-8 bg-white border border-[#E0E8DF] rounded text-center max-w-md space-y-3 shadow-xs">
+          <div className="w-8 h-8 border-2 border-[#477A58] border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="font-serif text-lg font-semibold text-[#183B2A]">
             Loading Network Investigation Graph...
           </p>
-          <span className="font-mono text-[0.8125rem] text-[#4F5F55] block">
+          <span className="font-mono text-xs text-[#68766B] block">
             ID: {activeNetworkId}
           </span>
         </div>
@@ -70,18 +70,18 @@ export const NetworkPage: React.FC = () => {
 
   if (isError || !network) {
     return (
-      <main className="w-full min-h-[calc(100vh-4rem)] flex flex-col items-center justify-center p-8 bg-[#F3F8F4]">
-        <div className="p-8 bg-white border border-[#9E3626] rounded-[3px] text-center max-w-md space-y-3">
-          <h2 className="font-serif text-[1.25rem] font-bold text-[#701F14]">
+      <main className="w-full min-h-[calc(100vh-8rem)] flex flex-col items-center justify-center p-8 bg-[#F5F8F4]">
+        <div className="p-8 bg-white border border-[#FCA5A5] rounded text-center max-w-md space-y-3 shadow-xs">
+          <h2 className="font-serif text-lg font-bold text-[#B91C1C]">
             Unable to Load Network
           </h2>
-          <p className="text-[0.875rem] text-[#4F5F55]">
+          <p className="text-xs text-[#68766B]">
             {error instanceof Error ? error.message : `Network ID '${activeNetworkId}' not found.`}
           </p>
           <button
             type="button"
             onClick={() => refetch()}
-            className="px-4 py-2 bg-[#2A5A3F] text-white text-[0.875rem] font-semibold rounded-[3px] hover:bg-[#1B3A29] transition-colors"
+            className="px-4 py-2 bg-[#477A58] text-white text-xs font-semibold rounded hover:bg-[#285239] transition-colors"
           >
             Retry
           </button>
@@ -95,7 +95,7 @@ export const NetworkPage: React.FC = () => {
     : null;
 
   return (
-    <main className="w-full min-h-[calc(100vh-4rem)] flex flex-col bg-[#F3F8F4]" role="main">
+    <main className="w-full min-h-[calc(100vh-8rem)] flex flex-col bg-[#F5F8F4]" role="main">
       {/* 1. Header & Compact Fact Strip */}
       <NetworkHeader network={network} linkedCaseId={linkedCaseId} />
 

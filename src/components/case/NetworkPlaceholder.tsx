@@ -102,9 +102,9 @@ export const NetworkPlaceholder: React.FC<NetworkPlaceholderProps> = ({ network,
 
         <Link
           to={`/networks/${networkId}${caseId ? `?caseId=${caseId}` : ''}`}
-          className="inline-flex items-center justify-center px-4 py-2 bg-green-800 text-white hover:bg-green-900 text-xs font-semibold border border-green-700 transition-colors shrink-0"
+          className="inline-flex items-center justify-center px-5 py-2.5 bg-green-800 text-white hover:bg-green-900 text-sm font-semibold border border-green-700 transition-colors shrink-0 rounded-md"
         >
-          Open Full Network Investigation →
+          Open Full Network Investigation
         </Link>
       </div>
     </section>

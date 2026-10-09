@@ -11,6 +11,11 @@ import {
   EvaluationPage,
   IngestPage,
   NotFoundPage,
+  RuleEnginePage,
+  ClaimIntelligencePage,
+  TemporalIntelligencePage,
+  InvestigationAssistantPage,
+  CasesIndexPage,
 } from '@/pages';
 
 export const queryClient = new QueryClient({
@@ -28,8 +33,14 @@ export const AppRoutes: React.FC = () => {
     <Routes>
       <Route path="/" element={<AppShell />}>
         <Route index element={<DashboardPage />} />
+        <Route path="dashboard" element={<DashboardPage />} />
+        <Route path="rules" element={<RuleEnginePage />} />
+        <Route path="claims" element={<ClaimIntelligencePage />} />
+        <Route path="temporal" element={<TemporalIntelligencePage />} />
         <Route path="queue" element={<QueuePage />} />
+        <Route path="cases" element={<CasesIndexPage />} />
         <Route path="cases/:id" element={<CaseDetailPage />} />
+        <Route path="assistant" element={<InvestigationAssistantPage />} />
         <Route path="networks" element={<NetworkPage />} />
         <Route path="networks/:id" element={<NetworkPage />} />
         <Route path="audit" element={<AuditPage />} />

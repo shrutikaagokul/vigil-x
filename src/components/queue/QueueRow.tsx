@@ -131,12 +131,12 @@ export const QueueRow: React.FC<QueueRowProps> = ({
       </td>
 
       {/* 7. Action */}
-      <td className="py-2.5 px-3 align-top text-right w-20">
-        <div className="flex flex-col items-end space-y-0.5">
-          <span className="text-xs font-semibold text-green-800 group-hover:text-green-950 flex items-center gap-0.5">
-            Open →
+      <td className="py-3 px-4 align-top text-right w-24">
+        <div className="flex flex-col items-end space-y-1">
+          <span className="text-sm font-semibold text-green-800 group-hover:text-green-950">
+            Open
           </span>
-          <span className="text-[10px] font-mono text-ink-subtle uppercase">
+          <span className="text-xs font-mono text-ink-subtle uppercase">
             {new Date(item.sla_due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
           </span>
         </div>

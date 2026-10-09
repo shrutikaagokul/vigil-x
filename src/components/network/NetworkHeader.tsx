@@ -24,9 +24,11 @@ export const NetworkHeader: React.FC<NetworkHeaderProps> = ({ network, linkedCas
         <div className="flex items-center gap-2 mb-2">
           <Link
             to={`/cases/${caseId}`}
-            className="text-[0.875rem] font-medium text-[#2A5A3F] hover:underline flex items-center gap-1"
+            className="text-base font-medium text-[#2A5A3F] hover:underline flex items-center gap-1.5"
           >
-            ← Back to Case <strong className="font-mono text-[#0B1A12]">{caseId}</strong>
+            <span className="sr-only">← Back to Case </span>
+            <span aria-hidden="true">Back to Case </span>
+            <strong className="font-mono text-[#0B1A12]">{caseId}</strong>
           </Link>
           <span className="text-[#8A969C]">·</span>
           <span className="text-[0.8125rem] text-[#4F5F55] font-normal">

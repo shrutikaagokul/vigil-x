@@ -185,7 +185,7 @@ export const NetworkInsightPanel: React.FC<NetworkInsightPanelProps> = ({
                     </div>
                     <div className="text-[#4F5F55] flex items-center justify-between">
                       <span>
-                        {isSource ? '→' : '←'}{' '}
+                        <span className="text-xs uppercase font-mono text-[#68766B] mr-1">{isSource ? 'to' : 'from'}</span>{' '}
                         <button
                           type="button"
                           onClick={() => onSelectNodeById?.(otherId)}
@@ -237,7 +237,7 @@ export const NetworkInsightPanel: React.FC<NetworkInsightPanelProps> = ({
               onClick={onClearSelection}
               className="text-[0.75rem] text-[#2A5A3F] hover:underline"
             >
-              Close inspection &times;
+              Close inspection
             </button>
           </div>
 
@@ -246,7 +246,7 @@ export const NetworkInsightPanel: React.FC<NetworkInsightPanelProps> = ({
               {formatEdgeTypeName(selectedEdge.edge_type)}
             </span>
             <h2 className="font-serif text-[1.125rem] leading-[1.375rem] font-semibold text-[#0B1A12] mt-2">
-              {getNodeLabel(network, selectedEdge.source)} →{' '}
+              {getNodeLabel(network, selectedEdge.source)} connects to{' '}
               {getNodeLabel(network, selectedEdge.target)}
             </h2>
           </div>

@@ -110,7 +110,6 @@ export const IngestPage: React.FC = () => {
             to="/"
             className="text-[0.875rem] font-medium text-ink-muted hover:text-ink-primary transition-colors flex items-center space-x-1.5 focus:outline-none focus-visible:underline"
           >
-            <span>←</span>
             <span>Back to Dashboard</span>
           </Link>
           <div className="flex items-center space-x-2">
@@ -148,7 +147,6 @@ export const IngestPage: React.FC = () => {
           className="mb-6 bg-emerald-50 border border-emerald-300 text-emerald-900 px-4 py-3 rounded-[3px] text-[0.9375rem] flex items-center justify-between"
         >
           <div className="flex items-center space-x-2">
-            <span className="font-bold text-emerald-800">✓</span>
             <span>{resetMessage}</span>
           </div>
           <button
@@ -373,19 +371,19 @@ export const IngestPage: React.FC = () => {
 
               <div className="w-full max-w-md bg-paper border border-hairline p-4 rounded-[3px] text-left space-y-2 font-mono text-[0.875rem]">
                 <div className="flex items-center justify-between text-emerald-800">
-                  <span>✓ 1. Ingesting {claimsCount.toLocaleString()} claim lines</span>
+                  <span>1. Ingesting {claimsCount.toLocaleString()} claim lines</span>
                   <span>DONE</span>
                 </div>
                 <div className="flex items-center justify-between text-[#12291C] font-semibold animate-pulse">
-                  <span>⏳ 2. Evaluating rule signals & anomalies</span>
+                  <span>2. Evaluating rule signals & anomalies</span>
                   <span>RUNNING</span>
                 </div>
                 <div className="flex items-center justify-between text-ink-subtle">
-                  <span>○ 3. Resolving network entities & graph</span>
+                  <span>3. Resolving network entities & graph</span>
                   <span>WAITING</span>
                 </div>
                 <div className="flex items-center justify-between text-ink-subtle">
-                  <span>○ 4. Rebuilding capacity-aware queue</span>
+                  <span>4. Rebuilding capacity-aware queue</span>
                   <span>WAITING</span>
                 </div>
               </div>
@@ -401,7 +399,7 @@ export const IngestPage: React.FC = () => {
                     Pipeline Execution Monitor
                   </span>
                   <span className="inline-flex items-center px-2.5 py-0.5 rounded-[2px] text-[0.8125rem] font-mono font-medium bg-emerald-50 text-emerald-800 border border-emerald-300">
-                    ✓ COMPLETED
+                    COMPLETED
                   </span>
                 </div>
 
@@ -473,9 +471,11 @@ export const IngestPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => navigate('/queue')}
-                    className="bg-[#12291C] text-white font-semibold text-[0.9375rem] px-4 py-2 rounded-[3px] hover:bg-[#1B3A29] transition-colors"
+                    aria-label="Open Priority Queue →"
+                    className="bg-[#12291C] text-white font-semibold text-[0.9375rem] px-5 py-2.5 rounded-[3px] hover:bg-[#1B3A29] transition-colors"
                   >
-                    Open Priority Queue →
+                    <span>Open Priority Queue</span>
+                    <span className="sr-only">→</span>
                   </button>
                 </div>
               </div>
@@ -535,9 +535,9 @@ export const IngestPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => navigate('/queue')}
-                    className="bg-[#12291C] text-white font-semibold text-[0.9375rem] px-4 py-2 rounded-[3px] hover:bg-[#1B3A29]"
+                    className="bg-[#12291C] text-white font-semibold text-[0.9375rem] px-5 py-2.5 rounded-[3px] hover:bg-[#1B3A29]"
                   >
-                    Open Queue →
+                    Open Queue
                   </button>
                 </div>
               </div>
