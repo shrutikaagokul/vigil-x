@@ -96,13 +96,19 @@ export const Sidebar: React.FC = () => {
       aria-label="Sidebar Navigation"
     >
       {/* Brand Header */}
-      <div className="h-20 px-6 border-b border-[#285239] flex items-center justify-between bg-[#183B2A]">
-        <div className="flex flex-col">
+      <div className="h-20 px-5 border-b border-[#285239] flex items-center gap-3 bg-[#183B2A]">
+        <img
+          src="/vigilx-logo.png"
+          alt="VIGIL-X Medical Intelligence Emblem"
+          className="h-12 w-auto object-contain shrink-0 select-none"
+          style={{ height: '48px', width: 'auto', objectFit: 'contain' }}
+        />
+        <div className="flex flex-col min-w-0">
           <div className="flex items-center gap-2 leading-none">
             <span className="font-serif font-bold text-xl tracking-tight text-white">Vigil-X</span>
             <span className="text-xs font-mono uppercase px-2 py-0.5 rounded bg-[#285239] text-[#D5E6D5] font-semibold border border-[#356345]">Nexus</span>
           </div>
-          <span className="text-xs text-[#B8D2B8] mt-1.5 tracking-wide">Healthcare Fraud Intelligence</span>
+          <span className="text-xs text-[#B8D2B8] mt-1.5 tracking-wide truncate">Healthcare Fraud Intelligence</span>
         </div>
       </div>
 
