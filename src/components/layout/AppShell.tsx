@@ -7,12 +7,12 @@ export const AppShell: React.FC = () => {
   const isDev = import.meta.env.DEV;
 
   return (
-    <div className="min-h-screen flex bg-[#F5F8F4] text-[#24352A] font-sans antialiased overflow-x-hidden">
+    <div className="h-screen flex bg-[#F5F8F4] text-[#24352A] font-sans antialiased overflow-hidden">
       {/* 1. Left Sidebar Navigation */}
       <Sidebar />
 
       {/* 2. Main Content Viewport */}
-      <div className="flex-1 flex flex-col min-w-0 bg-[#F5F8F4]">
+      <div className="flex-1 flex flex-col min-w-0 bg-[#F5F8F4] h-screen overflow-y-auto">
         <Masthead />
         <main className="flex-1 w-full p-8 md:p-10 max-w-[1680px] mx-auto">
           <Outlet />
