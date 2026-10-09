@@ -303,6 +303,7 @@ def _build_risk_scores_for_db(risk_df: pd.DataFrame) -> List[Dict[str, Any]]:
 def build_pipeline_and_db(
     db_path: str = "app.db",
     quick: bool = False,
+    export_artifacts_dir: Optional[str] = None,
 ) -> dict:
     print(f"[*] Starting Vigil-X Full Integrated Pipeline & SQLite DB Build -> {db_path}")
 
@@ -407,6 +408,30 @@ def build_pipeline_and_db(
         data_mode="fixture",
     )
 
+    # 8. Export compatible artifacts if requested/quick mode
+    export_dir = export_artifacts_dir or ("outputs/quick" if quick else None)
+    if export_dir:
+        out_p = Path(export_dir)
+        out_p.mkdir(parents=True, exist_ok=True)
+        if cases:
+            cpq_df = pd.DataFrame(cases).copy()
+            for col in ["why_flagged", "top_reasons", "benign_explanations", "risk_components", "future_risk"]:
+                if col in cpq_df.columns:
+                    cpq_df[col] = cpq_df[col].apply(lambda x: json.dumps(x) if isinstance(x, (dict, list)) else x)
+            cpq_df.to_parquet(out_p / "cases.parquet", index=False)
+        if case_evidence:
+            pd.DataFrame(case_evidence).to_parquet(out_p / "case_evidence.parquet", index=False)
+        if queue_items:
+            q_df = pd.DataFrame(queue_items).copy()
+            if "top_reasons" in q_df.columns:
+                q_df["top_reasons"] = q_df["top_reasons"].apply(lambda x: json.dumps(x) if isinstance(x, (dict, list)) else x)
+            q_df.to_parquet(out_p / "siu_queue.parquet", index=False)
+        if risk_df is not None and not risk_df.empty:
+            risk_df.to_parquet(out_p / "provider_scores.parquet", index=False)
+        with open(out_p / "evaluation_report.json", "w") as fp:
+            json.dump(combined_eval, fp, indent=2, default=str)
+        print(f"    - Exported compatible quick dataset artifacts to {out_p}")
+
     print("\n[SUCCESS] Application database built successfully:")
     for k, v in stats.items():
         print(f"    - {k}: {v} records")
@@ -417,6 +442,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Build Vigil-X SQLite database from full integrated pipeline.")
     parser.add_argument("--db-path", default="app.db", help="Target SQLite file path")
     parser.add_argument("--quick", action="store_true", help="Generate smaller dataset for quick build")
+    parser.add_argument("--export-artifacts", default=None, help="Directory to export matching parquet artifacts")
     args = parser.parse_args()
 
-    build_pipeline_and_db(db_path=args.db_path, quick=args.quick)
+    build_pipeline_and_db(db_path=args.db_path, quick=args.quick, export_artifacts_dir=args.export_artifacts)
+

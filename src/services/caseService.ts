@@ -354,7 +354,7 @@ export async function generateBrief(caseId: string): Promise<CaseBrief> {
     return {
       case_id: caseId,
       title: `Executive Investigation Brief: ${caseItem.title}`,
-      summary: `Investigation dossier prioritized based on indicators consistent with multi-entity coordination across ${caseItem.rules_triggered.join(', ')}. Primary financial exposure is estimated at ₹${caseItem.est_dollars.toLocaleString('en-IN')} with direct identifiable overpayment of ₹${caseItem.est_overpay.toLocaleString('en-IN')}.`,
+      summary: `Investigation dossier prioritized based on indicators consistent with multi-entity coordination across ${caseItem.rules_triggered.join(', ')}. Primary financial exposure is estimated at $${caseItem.est_dollars.toLocaleString('en-US')} with direct identifiable overpayment of $${caseItem.est_overpay.toLocaleString('en-US')}.`,
       key_findings: [
         `Identified 6-entity provider network bound by shared bank routing account hash (9a8b7c6d5e4f3a21).`,
         `82.4% reciprocal physical therapy referral concentration between Dr. Mercer (P0042) and Dr. Vance (P0043).`,
@@ -418,7 +418,7 @@ export async function askCase(caseId: string, question: string): Promise<AskResp
       answer = `Travel velocity calculations show provider Dr. Mercer billed consecutive in-person procedures in Fulton and Nelson counties (95.2 miles apart) with only a 45-minute timestamp difference, requiring 78.4 mph average speed.`;
       citations = ['E-R06-TRAVEL-002', 'E-R08-GEODIST-005'];
     } else if (qLower.includes('lab') || qLower.includes('toxicology') || qLower.includes('drug')) {
-      answer = `Same-day referral analysis shows 94.6% of patient visits at P0042 generated definitive drug testing claims (G0483) at BioMatrix Labs (P0046), totaling ₹36,900 in estimated overpayment exposure.`;
+      answer = `Same-day referral analysis shows 94.6% of patient visits at P0042 generated definitive drug testing claims (G0483) at BioMatrix Labs (P0046), totaling $36,900 in estimated overpayment exposure.`;
       citations = ['E-R07-LABSAME-004'];
     }
 

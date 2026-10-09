@@ -49,7 +49,7 @@ export const CopilotPlaceholder: React.FC = () => {
 
         <div className="space-y-3 text-sm text-ink font-sans">
           <p className="leading-relaxed">
-            <strong>Case Overview:</strong> Prioritized investigation into focal provider billing velocities exhibiting coordinated multi-entity patterns. Analysis of 84 claims identifies ₹184,320 in direct line-item overpayment exposure across overlapping service dates and reciprocal referral cycles.
+            <strong>Case Overview:</strong> Prioritized investigation into focal provider billing velocities exhibiting coordinated multi-entity patterns. Analysis of 84 claims identifies $184,320 in direct line-item overpayment exposure across overlapping service dates and reciprocal referral cycles.
           </p>
 
           <div className="p-3 bg-surface border border-border space-y-2 text-xs font-sans">

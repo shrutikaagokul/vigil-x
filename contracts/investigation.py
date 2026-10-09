@@ -56,12 +56,13 @@ class CaseEvidenceItem(BaseModel):
     field_name: Optional[str] = None
     field_value: Optional[str] = None
     plain_text: str
-    est_overpay: float = 0.0
+    est_overpay: Optional[float] = None
     severity: str = "MEDIUM"
     source_table: str = "alerts"
     source_artifact: Optional[str] = None
     timestamp: Optional[str] = None
     fp_notes: Optional[str] = None
+    currency: Optional[str] = "USD"
 
 
 class CaseHeader(BaseModel):
@@ -75,9 +76,10 @@ class CaseHeader(BaseModel):
     risk_score: float = Field(ge=0.0, le=100.0, description="Unified risk score (0-100)")
     confidence: float = Field(ge=0.0, le=1.0)
     evidence_strength: float = Field(ge=0.0, le=1.0)
-    exposure_low: float = 0.0
-    exposure_high: float = 0.0
-    members_affected: int = 0
+    exposure_low: Optional[float] = 0.0
+    exposure_high: Optional[float] = 0.0
+    currency: str = "USD"
+    members_affected: Optional[int] = 0
     claims_count: int = 0
     why_flagged: List[str] = Field(default_factory=list)
     top_reasons: List[str] = Field(default_factory=list)
@@ -111,9 +113,9 @@ class QueueItem(BaseModel):
     entity_name: str
     risk: float
     priority: PriorityLevel
-    exposure_low: float
-    exposure_high: float
-    members_affected: int
+    exposure_low: Optional[float] = 0.0
+    exposure_high: Optional[float] = 0.0
+    members_affected: Optional[int] = 0
     severity: str
     evidence_strength: float
     confidence: float
@@ -121,6 +123,11 @@ class QueueItem(BaseModel):
     ev_per_hour: float
     slot: int
     top_reasons: List[str] = Field(default_factory=list)
+    capacity_selected: bool = True
+    queue_status: str = "QUEUED"
+    capacity_rank: Optional[int] = None
+    queue_id: Optional[str] = None
+    currency: str = "USD"
 
 
 class QueueResponse(BaseApiResponse):
@@ -256,8 +263,48 @@ class SummaryResponse(BaseApiResponse):
     claims_analyzed: int
     lines_analyzed: int
     paid_total: float
+    currency: str = "USD"
     alerts_total: int
     entity_cases: int
     network_cases: int
     queue_size: int
     funnel: SummaryFunnel
+
+
+class MetricScore(BaseModel):
+    precision: float
+    recall: float
+    f1_score: float
+    true_positives: int
+    false_positives: int
+    false_negatives: int
+
+
+class ScenarioResult(BaseModel):
+    scenario_id: str
+    scenario_type: str
+    description: str
+    ring_id: Optional[str] = None
+    expected_rules: List[str] = Field(default_factory=list)
+    detected: bool
+    recovery_jaccard: Optional[float] = None
+    providers_count: int
+    providers_detected: int
+
+
+class EvaluationResponse(BaseApiResponse):
+    evaluated_at: str
+    total_claims_evaluated: int
+    total_providers_evaluated: int
+    total_scenarios: int
+    detected_scenarios: int
+    scenario_recall: float
+    claim_metrics: MetricScore
+    provider_metrics: MetricScore
+    ring_recovery_mean_jaccard: float
+    scenario_breakdown: List[ScenarioResult] = Field(default_factory=list)
+    rule_performance: Dict[str, MetricScore] = Field(default_factory=dict)
+    limitations: List[str] = Field(default_factory=list)
+    benchmark_mode: str = "synthetic_benchmark"
+    evaluations: List[Dict[str, Any]] = Field(default_factory=list)
+    total_evaluations: int = 1

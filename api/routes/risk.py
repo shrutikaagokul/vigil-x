@@ -24,6 +24,7 @@ def list_risk_scores(
     return {
         "total": len(results),
         "scores": results,
+        "risk_scores": results,
         "as_of": get_current_as_of(),
         "synthetic": True,
     }

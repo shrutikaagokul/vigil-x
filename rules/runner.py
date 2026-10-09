@@ -85,34 +85,35 @@ def run_network_behavior_rules(data: Dict[str, pd.DataFrame]) -> List[Alert]:
 def run_all_rules(data: Dict[str, pd.DataFrame]) -> List[Alert]:
     """
     Execute all rules R01-R10 and return combined alerts.
-
-    R01-R05 are imported dynamically to allow independent development.
-    If R01-R05 are not yet available, only R06-R10 run.
+    Adapts standard schema columns for R01-R05 claim utilization rules,
+    and runs behavioral network rules R06-R10.
     """
     all_alerts: List[Alert] = []
 
-    # Try R01-R05 (owned by another engineer)
-    r01_r05_rules = [
-        ("R01", "rules.r01_duplicate", "detect_duplicate_billing"),
-        ("R02", "rules.r02_upcoding", "detect_upcoding"),
-        ("R03", "rules.r03_unbundling", "detect_unbundling"),
-        ("R04", "rules.r04_phantom", "detect_phantom_services"),
-        ("R05", "rules.r05_utilization", "detect_excessive_utilization"),
-    ]
+    # Execute R01-R05 via claim utilization runner if available
+    try:
+        from vigilx.runner import run_claim_utilization_rules
+        data_r01 = dict(data)
+        if "claims" in data_r01 and not data_r01["claims"].empty:
+            claims_adapter = data_r01["claims"].copy()
+            if "service_date" in claims_adapter.columns and "service_from" not in claims_adapter.columns:
+                claims_adapter["service_from"] = pd.to_datetime(claims_adapter["service_date"])
+            if "procedure_code" in claims_adapter.columns and "cpt_code" not in claims_adapter.columns:
+                claims_adapter["cpt_code"] = claims_adapter["procedure_code"]
+            if "provider_id" in claims_adapter.columns and "billing_provider_id" not in claims_adapter.columns:
+                claims_adapter["billing_provider_id"] = claims_adapter["provider_id"]
+            if "status" in claims_adapter.columns and "claim_status" not in claims_adapter.columns:
+                claims_adapter["claim_status"] = claims_adapter["status"]
+            if "modifier" not in claims_adapter.columns:
+                claims_adapter["modifier"] = None
+            data_r01["claims"] = claims_adapter
 
-    for rule_id, module_name, func_name in r01_r05_rules:
-        try:
-            import importlib
-            mod = importlib.import_module(module_name)
-            func = getattr(mod, func_name)
-            alerts = func(data)
-            all_alerts.extend(alerts)
-        except (ImportError, ModuleNotFoundError):
-            pass  # R01-R05 not yet available
-        except Exception as e:
-            print(f"[{rule_id}] Error: {e}")
+        r01_r05 = run_claim_utilization_rules(data_r01)
+        all_alerts.extend(r01_r05)
+    except Exception as e:
+        print(f"[R01-R05] Error running claim utilization rules: {e}")
 
-    # R06-R10
+    # Execute R06-R10 behavioral and network rules
     all_alerts.extend(run_network_behavior_rules(data))
 
     return all_alerts

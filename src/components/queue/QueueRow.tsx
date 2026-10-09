@@ -122,10 +122,10 @@ export const QueueRow: React.FC<QueueRowProps> = ({
       <td className="py-2.5 px-3 align-top text-right w-32">
         <div className="flex flex-col items-end">
           <span className="font-sans text-xs font-bold text-green-950">
-            ₹{item.est_dollars.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+            ${item.est_dollars.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
           </span>
           <span className="text-[10px] font-mono text-ink-subtle mt-0.5">
-            ₹{(item.est_overpay / 1000).toFixed(1)}k overpay
+            ${(item.est_overpay / 1000).toFixed(1)}K overpay
           </span>
         </div>
       </td>
